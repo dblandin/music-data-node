@@ -77,8 +77,8 @@ SongWorker.prototype = {
 		var songs = new SongCollection();
 		var songTypes = new SongTypeCollection();
 
-		songs.extractFromRawReponse(rawSongs);
-		songTypes.extractFromRawReponse(rawSongs);
+		songs.extractFromRawResponse(rawSongs);
+		songTypes.extractFromRawResponse(rawSongs);
 		
 		return bookshelf.transaction(function(t) {
 

@@ -8,7 +8,7 @@ var GenreCollection = bookshelf.Collection.extend({
 	model: Genre,
 
 	
-	extractFromRawReponse: function(response) {
+	extractFromRawResponse: function(response) {
 		var self = this;
 		_.each(response.genres, function(genre, index) {
 

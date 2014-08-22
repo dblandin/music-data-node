@@ -11,7 +11,7 @@ var BiographyCollection = bookshelf.Collection.extend({
 	limitPerArtist: 5,
 
 	
-	extractFromRawReponse: function(response) {
+	extractFromRawResponse: function(response) {
 		var self = this;
 		_.each(_.first(response.biographies, this.limitPerArtist), function(biography) {
 

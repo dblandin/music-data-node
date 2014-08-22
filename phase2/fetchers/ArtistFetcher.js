@@ -6,7 +6,7 @@ var keymaster = require('../../base/keymaster').echonest;
 var _ = require('underscore');
 
 /**
- * Artist fetcher.
+ * Echonest Artist fetcher.
  */
 var ArtistFetcher = function(artist) {
 	this.artist = artist;
@@ -25,46 +25,67 @@ ArtistFetcher.prototype = {
 		return Promise.resolve(keymaster.getKey())
 
 		.then(function(key) {
-			return request(self.generateProfileRequest(key)).then(function(response) {
-				var rateLimit = parseInt(response[0].headers['x-ratelimit-limit']);
+
+			return self.makeRequest(self.generateProfileRequest(key)).then(function(response) {
+
 				var response = JSON.parse(response[1]).response;
 
-				keymaster.setRateLimit(rateLimit);
-
-				if (self.requestWasSuccessful(response) && self.requestFoundArtist(response))
+				if (self.requestFoundArtist(response))
 					rawArtist = response.artist;
 
-				else throw('Artist not found: ' + self.artist.name || self.artist.echonest_id);
+				else throw('Artist not found (phase 2): ' + self.artist.name || self.artist.echonest_id);
 			});
 		})
 
 		.then(keymaster.getKey)
 
 		.then(function(key) {
-			return request(self.generateSimilarRequest(key)).then(function(similarArtists) {
-				rawArtist.similar = JSON.parse(similarArtists[1]).response.artists;
+			return self.makeRequest(self.generateSimilarRequest(key)).then(function(response) {
+				rawArtist.similar = JSON.parse(response[1]).response.artists;
 			});
 		})
 
 		.then(keymaster.getKey)
 
 		.then(function(key){ 
-			return request(self.generateOldSimilarRequest(key)).then(function(oldSimilarArtists) {
-				rawArtist.oldSimilar = JSON.parse(oldSimilarArtists[1]).response.artists;
+			return self.makeRequest(self.generateOldSimilarRequest(key)).then(function(response) {
+				rawArtist.oldSimilar = JSON.parse(response[1]).response.artists;
 			});
 		})
 
 		.then(keymaster.getKey)
 
 		.then(function(key) {
-			return request(self.generateNewSimilarRequest(key)).then(function(newSimilarArtists) {
-				rawArtist.newSimilar = JSON.parse(newSimilarArtists[1]).response.artists;
+			return self.makeRequest(self.generateNewSimilarRequest(key)).then(function(response) {
+				rawArtist.newSimilar = JSON.parse(response[1]).response.artists;
 			});
 		})
 
 		.then(function() {
 			return rawArtist;
 		});
+	},
+
+
+	makeRequest: function(options) {
+		var self = this;
+		return request(options).then(function(response) {
+
+			self.updateKeyRateLimit(response)
+			var error = self.getErrorFromResponse(response);
+
+			if(error)
+				throw (error + '. On phase 2 for artist: ' + self.artist.name || self.artist.echonest_id)
+
+			else
+				return response;
+		});
+	},
+
+
+	updateKeyRateLimit: function(response) {
+		if (response && _.isArray(response) && !_.isEmpty(response) && response[0].headers && response[0].headers['x-ratelimit-limit']) 
+			keymaster.setRateLimit(parseInt(response[0].headers['x-ratelimit-limit']));		
 	},
 
 
@@ -167,8 +188,11 @@ ArtistFetcher.prototype = {
 	},
 
 
-	requestWasSuccessful: function(response) {
-		return response.status.message.toLowerCase() === 'success';
+	getErrorFromResponse: function(response) {
+		if (JSON.parse(response[1]).response.status.message.toLowerCase() !== 'success')
+			return JSON.parse(response[1]).response.status.message;
+
+		return false;
 	},
 
 

@@ -12,7 +12,7 @@ var lock = require('redis-lock')(redisClient, 5000);
 var KeyManager = function(args) {
 	var keysContainSecrets = _.sample(args.keys).secret;
 	
-	this.keys = keysContainSecrets ? _.pluck(args.keys, key) : args.keys;
+	this.keys = keysContainSecrets ? _.pluck(args.keys, 'key') : args.keys;
 	this.keySecretObject = keysContainSecrets ? args.keys : null;
 
 	this.margin = args.margin || 0;

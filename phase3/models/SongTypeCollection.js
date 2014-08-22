@@ -8,7 +8,7 @@ var SongTypeCollection = bookshelf.Collection.extend({
 	model: SongType,
 
 	
-	extractFromRawReponse: function(response) {
+	extractFromRawResponse: function(response) {
 		var self = this;
 		_.each(response, function(song) {
 

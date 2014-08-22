@@ -8,7 +8,7 @@ var Artist = bookshelf.Model.extend({
 	tableName: 'phase2_echonest_artists',
 
 
-	extractFromRawReponse: function(response) {
+	extractFromRawResponse: function(response) {
 		var years = _.isArray(response.years_active) ? response.years_active : null;
 		this.set({
 

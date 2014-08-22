@@ -14,14 +14,10 @@ var SimilarCollection = bookshelf.Collection.extend({
 
 			self.add(new self.model({
 
-				echonest_artist_id: 	response.id,
-				similar_artist_id: 		similar.id,
-				similar_artist_name: 	similar.name,
-				rank: 								index + 1,
-				familiarity_rank: 		similar.familiarity_rank,
-				hotttnesss_rank: 			similar.hotttnesss_rank,
-				timestamp: 						new Date()
-
+				artist_musicbrainz_id: 						response.mbid,
+				similar_artist_musicbrainz_id: 		similar.mbid,
+				similar_artist_name: 							similar.name,
+				match: 														similar.match
 			}));
 		});
 		return this;

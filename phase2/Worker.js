@@ -1,4 +1,3 @@
-var events = require('events');
 var util = require('util');
 var _ = require('underscore');
 var bookshelf = require('../base/bookshelf');
@@ -78,14 +77,14 @@ ArtistWorker.prototype = {
 
 	save: function(rawArtist) {
 		var self =						this;
-		var artist = 					new ArtistModel().extractFromRawReponse(rawArtist);
-		var terms = 					new TermCollection().extractFromRawReponse(rawArtist);
-		var genres = 					new GenreCollection().extractFromRawReponse(rawArtist);
-		var biographies = 		new BiographyCollection().extractFromRawReponse(rawArtist);
-		var reviews = 				new ReviewCollection().extractFromRawReponse(rawArtist);
-		var similarities = 		new SimilarCollection().extractFromRawReponse(rawArtist);
-		var oldSimilarities = new SimilarBefore1970Collection().extractFromRawReponse(rawArtist);
-		var newSimilarities = new SimilarAfter1969Collection().extractFromRawReponse(rawArtist);
+		var artist = 					new ArtistModel().extractFromRawResponse(rawArtist);
+		var terms = 					new TermCollection().extractFromRawResponse(rawArtist);
+		var genres = 					new GenreCollection().extractFromRawResponse(rawArtist);
+		var biographies = 		new BiographyCollection().extractFromRawResponse(rawArtist);
+		var reviews = 				new ReviewCollection().extractFromRawResponse(rawArtist);
+		var similarities = 		new SimilarCollection().extractFromRawResponse(rawArtist);
+		var oldSimilarities = new SimilarBefore1970Collection().extractFromRawResponse(rawArtist);
+		var newSimilarities = new SimilarAfter1969Collection().extractFromRawResponse(rawArtist);
 
 		return bookshelf.transaction(function(t) {
 

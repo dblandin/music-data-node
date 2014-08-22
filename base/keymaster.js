@@ -302,17 +302,20 @@ var options = {
 			}
 		],
 		margin: 1,
-		rateLimit: 5,
-		timeLimit: 1000
+		rateLimit: 25,
+		timeLimit: 5000
 	}
 };
 
 
 var echonestKeyManager = new KeyManager(options.echonest);
+var lastFmKeyManager = new KeyManager(options.lastFm);
 
 
 module.exports = {
 
-	echonest: echonestKeyManager
+	echonest: echonestKeyManager,
+
+	lastFm: lastFmKeyManager
 
 };

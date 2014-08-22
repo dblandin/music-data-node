@@ -8,7 +8,7 @@ var SimilarCollection = bookshelf.Collection.extend({
 	model: Similar,
 
 	
-	extractFromRawReponse: function(response) {
+	extractFromRawResponse: function(response) {
 		var self = this;
 		_.each(response.oldSimilar, function(similar, index) {
 

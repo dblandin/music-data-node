@@ -59,10 +59,10 @@ var production = {
 
 	rabbitMq: {
 		connection: {
-			host: 'localhost', 
+			host: '107.170.110.40', 
 			port: 5672,
-			login: 'guest',
-			password: 'guest',
+			login: 'root',
+			password: 'ioyinfuifjwu',
 			connectionTimeout: 0,
 			authMechanism: 'AMQPLAIN',
 			vhost: '/',
@@ -91,7 +91,7 @@ var production = {
 	},
 
 	database: {
-		host: '107.170.46.88',
+		host: '107.170.133.156',
 		port: 48189,
 		user: 'musicdata',
 		password: 'SsD7N4krmQxnQjgzCXzLvmMoQv8ewH9MfssMdvJresAumjToze',

@@ -11,7 +11,7 @@ var ReviewCollection = bookshelf.Collection.extend({
 	limitPerArtist: 5,
 
 	
-	extractFromRawReponse: function(response) {
+	extractFromRawResponse: function(response) {
 		var self = this;
 		_.each(_.first(response.reviews, this.limitPerArtist), function(review) {
 

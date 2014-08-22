@@ -8,7 +8,7 @@ var TermCollection = bookshelf.Collection.extend({
 	model: Term,
 
 	
-	extractFromRawReponse: function(response) {
+	extractFromRawResponse: function(response) {
 		var self = this;
 		_.each(response.terms, function(term) {
 
