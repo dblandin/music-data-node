@@ -4,9 +4,10 @@ var Promise = require('bluebird');
 var request = Promise.promisify(require('request'));
 var keymaster = require('../../base/keymaster').echonest;
 var _ = require('underscore');
+var echonestFetcher = require('../../base/fetchers/echonestFetcher');
 
 /**
- * Song fetcher.
+ * Song fetcher. Inherits from echonestFetcher.
  */
 var SongFetcher = function(artist) {
 	this.artist = artist;
@@ -14,18 +15,18 @@ var SongFetcher = function(artist) {
 };
 
 
-SongFetcher.prototype = {
+SongFetcher.prototype = _.extend({}, echonestFetcher, {
 
 	url: 'http://developer.echonest.com/api/v4/song/',
 
 
-	fetch: function(callback) {
+	fetch: function() {
 		this.songs = [];
 		this.page = 1;
-		var fetchAllSongs = _.bind(this.fetchAllSongs, this);
+		var paginateThroughSongs = _.bind(this.paginateThroughSongs, this);
 		var self = this;
 
-		return Promise.resolve(fetchAllSongs())
+		return Promise.resolve(paginateThroughSongs())
 
 		.then(function() {
 			if(self.songs && !_.isEmpty(self.songs))
@@ -36,17 +37,12 @@ SongFetcher.prototype = {
 	},
 
 
-	fetchAllSongs: function() {
-		return this.fetchNextRequest();
-	},
-
-
-	fetchNextRequest: function() {
+	paginateThroughSongs: function() {
 		var self = this;
 		return Promise.resolve(keymaster.getKey())
 
 			.then(function(key) { 
-				return request(self.generateSearchRequestOptions(key));
+				return self.makeRequest(self.generateSearchRequestOptions(key));
 			})
 
 			.then(_.bind(this.onRequestDone, this));
@@ -54,19 +50,15 @@ SongFetcher.prototype = {
 
 
 	onRequestDone: function(response) {
-		var rateLimit = parseInt(response[0].headers['x-ratelimit-limit']);
 		var response = JSON.parse(response[1]).response;
 		var songs = response.songs;
-
-		keymaster.setRateLimit(rateLimit);
 		
 		if (songs && !_.isEmpty(songs)) {
 			this.songs = _.union(this.songs, songs);
 			this.page++;
-			var shouldMakeAnotherRequest = (songs.length === this.biteSize);
 
-			if (shouldMakeAnotherRequest)
-				return this.fetchNextRequest();
+			if (songs.length === this.biteSize)
+				return this.paginateThroughSongs();
 		}
 	},
 
@@ -98,11 +90,7 @@ SongFetcher.prototype = {
 				'id:spotify'
 			]
 		});
-	},
-
-	requestWasSuccessful: function(response) {
-		return response.status.message.toLowerCase() === 'success';
 	}
-}
+});
 
 module.exports = SongFetcher;

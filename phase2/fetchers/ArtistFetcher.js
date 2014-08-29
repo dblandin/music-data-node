@@ -4,16 +4,17 @@ var Promise = require('bluebird');
 var request = Promise.promisify(require('request'));
 var keymaster = require('../../base/keymaster').echonest;
 var _ = require('underscore');
+var echonestFetcher = require('../../base/fetchers/echonestFetcher');
 
 /**
- * Echonest Artist fetcher.
+ * Echonest Artist fetcher. Inherits from echonestFetcher.
  */
 var ArtistFetcher = function(artist) {
 	this.artist = artist;
 };
 
 
-ArtistFetcher.prototype = {
+ArtistFetcher.prototype = _.extend({}, echonestFetcher, {
 
 	url: 'http://developer.echonest.com/api/v4/artist/',
 
@@ -64,28 +65,6 @@ ArtistFetcher.prototype = {
 		.then(function() {
 			return rawArtist;
 		});
-	},
-
-
-	makeRequest: function(options) {
-		var self = this;
-		return request(options).then(function(response) {
-
-			self.updateKeyRateLimit(response)
-			var error = self.getErrorFromResponse(response);
-
-			if(error)
-				throw (error + '. On phase 2 for artist: ' + self.artist.name || self.artist.echonest_id)
-
-			else
-				return response;
-		});
-	},
-
-
-	updateKeyRateLimit: function(response) {
-		if (response && _.isArray(response) && !_.isEmpty(response) && response[0].headers && response[0].headers['x-ratelimit-limit']) 
-			keymaster.setRateLimit(parseInt(response[0].headers['x-ratelimit-limit']));		
 	},
 
 
@@ -188,17 +167,9 @@ ArtistFetcher.prototype = {
 	},
 
 
-	getErrorFromResponse: function(response) {
-		if (JSON.parse(response[1]).response.status.message.toLowerCase() !== 'success')
-			return JSON.parse(response[1]).response.status.message;
-
-		return false;
-	},
-
-
 	requestFoundArtist: function(response) {
 		return response.artist && !_.isEmpty(response.artist);
 	}
-}
+});
 
 module.exports = ArtistFetcher;

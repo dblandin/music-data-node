@@ -1,9 +1,11 @@
 var amqp = require('amqp');
 var config = require('./config').rabbitMq;
+var chalk = require('chalk');
+
+var ArtistWorkerPhase1 = require('./phase1/Worker');
 var ArtistWorkerPhase2 = require('./phase2/Worker');
 var SongWorkerPhase3 = require('./phase3/Worker');
 var ArtistWorkerPhase4 = require('./phase4/Worker');
-var chalk = require('chalk');
 
 module.exports = {
 
@@ -20,11 +22,23 @@ module.exports = {
 
 
 						case 1:
-							messageObject.acknowledge(false);
-							return new Error('Phase 1 not implemented');
+							if(!message.query) {
+								messageObject.acknowledge(false);
+								break;
+							}
+							var worker = new ArtistWorkerPhase1(message.query);
+							worker.start(function() {
+								console.log(chalk.gray('Message ACKed'));
+								messageObject.acknowledge(false);
+							});
+							break;
 
 
 						case 2:
+							if(!message.artist) {
+								messageObject.acknowledge(false);
+								break;
+							}
 							var worker = new ArtistWorkerPhase2(message.artist);
 							worker.start(function() {
 								console.log(chalk.gray('Message ACKed'));
@@ -34,6 +48,10 @@ module.exports = {
 
 
 						case 3:
+							if(!message.artist) {
+								messageObject.acknowledge(false);
+								break;
+							}
 							var worker = new SongWorkerPhase3(message.artist);
 							worker.start(function() {
 								console.log(chalk.gray('Message ACKed'));
@@ -43,6 +61,10 @@ module.exports = {
 
 
 						case 4:
+							if(!message.artist) {
+								messageObject.acknowledge(false);
+								break;
+							}
 							var worker = new ArtistWorkerPhase4(message.artist);
 							worker.start(function() {
 								console.log(chalk.gray('Message ACKed'));

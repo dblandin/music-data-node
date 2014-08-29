@@ -48,7 +48,10 @@ var development = {
 	},
 
 	redis: {
-		url: 'redis://localhost:6379'	
+		url: {
+			port: 6379,
+			hostname: '127.0.0.1'
+		}
 	}
 };
 
@@ -100,18 +103,27 @@ var production = {
 	},
 
 	redis: {
-		url: 'redis://localhost:6379'	
+		url: {
+			port: 6379,
+			hostname: '10.128.177.237'
+		}
 	}
 };
 
 var env = process.env.NODE_ENV || 'development';
 var config;
 
-if (env === 'development')
+if (env === 'development') {
 	config = development;
+	console.log('Running under development');
+}
+	
 
-if (env === 'production')
+if (env === 'production') {
 	config = production;
+	console.log('Running under production');
+}
+	
 
 
 module.exports = config;
