@@ -22,7 +22,7 @@ SongFetcher.prototype = _.extend({}, echonestFetcher, {
 
 	fetch: function() {
 		this.songs = [];
-		this.page = 1;
+		this.page = 0;
 		var paginateThroughSongs = _.bind(this.paginateThroughSongs, this);
 		var self = this;
 
@@ -78,7 +78,7 @@ SongFetcher.prototype = _.extend({}, echonestFetcher, {
 			format: 'json',
 			artist_id: this.artist.echonest_id, // TODO support when we don't have the id
 			results: this.biteSize,
-			start: (this.page - 1) * this.biteSize,
+			start: this.page * this.biteSize,
 			bucket: [
 				'song_currency',
 				'song_hotttnesss',

@@ -18,8 +18,6 @@ var Artist = bookshelf.Model.extend({
 			playcount: 				response.stats.playcount,
 			biography: 				response.bio.content,
 			biography_date: 	response.bio.published,
-			// start: 						response.start,
-			// end: 							response.end,
 			timestamp: 				new Date()
 
 		});
