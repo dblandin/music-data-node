@@ -21,6 +21,7 @@ var ArtistWorker = function(artist) {
 
 ArtistWorker.prototype = {
 
+
 	start: function(callback) {
 		var self = this;
 		this.done = callback;
@@ -47,49 +48,22 @@ ArtistWorker.prototype = {
 		if(!this.artist.musicbrainz_id)
 			throw('No name or musicbrainz_id for artist on phase4');
 
-		return Promise.resolve(this.getOmitArray())
+		return Promise.resolve(this.shouldSaveArtist())
 
-		.then(function(omitArray) {
-			self.omitArray = omitArray;
-
-			if(self.omitArray.length === 6)
+		.then(function(shouldFetch) {
+		
+			if(!shouldFetch)
 				console.log(chalk.blue.bold('Artist ' + (self.artist.name || self.artist.musicbrainz_id) + ' has been already fetched.'));
 
 			else {
 				var artistFetcher = new ArtistFetcher(self.artist);
-
-				return Promise.resolve(artistFetcher.fetch({ omit: omitArray }))
+				
+				return Promise.resolve(artistFetcher.fetch())
 
 				.then(function(rawArtist) {
 					return self.save(rawArtist);
 				});
 			}
-		});
-	},
-
-
-	getOmitArray: function() {
-		var omittedFields = [];
-		var arr = [
-			{ key: 'artist', 	resolver: _.bind(this.shouldSaveArtist, this) },  
-			{ key: 'similar', resolver: _.bind(this.shouldSaveSimilar, this) },  
-			{ key: 'albums', 	resolver: _.bind(this.shouldSaveAlbums, this) },  
-			{ key: 'tags', 		resolver: _.bind(this.shouldSaveTags, this) },  
-			{ key: 'fans', 		resolver: _.bind(this.shouldSaveFans, this) },  
-			{ key: 'tracks', 	resolver: _.bind(this.shouldSaveTracks, this) }  
-		];
-
-		return Promise.map(arr, function(obj) {
-			return Promise.resolve(obj.resolver()).then(function(shouldSave) {
-
-				if(!shouldSave) omittedFields.push(obj.key);
-
-			});
-		})
-
-		.then(function() {
-			console.log(omittedFields);
-			return omittedFields;
 		});
 	},
 
@@ -110,50 +84,22 @@ ArtistWorker.prototype = {
 
 	save: function(rawArtist) {
 		var self = this;
+		var artist = new ArtistModel().extractFromRawResponse(rawArtist);
+		var albumCollection = new AlbumCollection().extractFromRawResponse(rawArtist);
+		var fanCollection = new FanCollection().extractFromRawResponse(rawArtist);
+		var similarCollection = new SimilarCollection().extractFromRawResponse(rawArtist);
+		var tagCollection = new TagCollection().extractFromRawResponse(rawArtist);
+		var trackCollection = new TrackCollection().extractFromRawResponse(rawArtist);
 
 		return bookshelf.transaction(function(t) {
 	
-			return Promise.resolve((function() {
-				if(_.indexOf(self.omitArray, 'artist') !== -1) return;
+			return Promise.resolve(artist.save(null, { transacting: t }))
 
-			var artist = new ArtistModel().extractFromRawResponse(rawArtist);
-			return artist.save(null, { transacting: t });
-			})())
-
-			.then(function() {
-				if(_.indexOf(self.omitArray, 'albums') !== -1) return;
-
-				var albumCollection = new AlbumCollection().extractFromRawResponse(rawArtist);
-				return albumCollection.saveAll(null, { transacting: t });
-			})
-
-			.then(function() {
-				if(_.indexOf(self.omitArray, 'fans') !== -1) return;
-
-				var fanCollection = new FanCollection().extractFromRawResponse(rawArtist);
-				return fanCollection.saveAll(null, { transacting: t });
-			})
-
-			.then(function() {
-				if(_.indexOf(self.omitArray, 'similar') !== -1) return;
-
-				var similarCollection = new SimilarCollection().extractFromRawResponse(rawArtist);
-				return similarCollection.saveAll(null, { transacting: t });
-			})
-
-			.then(function() {
-				if(_.indexOf(self.omitArray, 'tags') !== -1) return;
-
-				var tagCollection = new TagCollection().extractFromRawResponse(rawArtist);
-				return tagCollection.saveAll(null, { transacting: t });
-			})
-
-			.then(function() {
-				if(_.indexOf(self.omitArray, 'tracks') !== -1) return;
-
-				var trackCollection = new TrackCollection().extractFromRawResponse(rawArtist);
-				return trackCollection.saveAll(null, { transacting: t });
-			})
+			.then(function() { return albumCollection.saveAll(null, { transacting: t }); })
+			.then(function() { return fanCollection.saveAll(null, { transacting: t }); })
+			.then(function() { return similarCollection.saveAll(null, { transacting: t }); })
+			.then(function() { return tagCollection.saveAll(null, { transacting: t }); })
+			.then(function() { return trackCollection.saveAll(null, { transacting: t }); })
 		})
 
 		.then(_.bind(function() {
@@ -169,45 +115,9 @@ ArtistWorker.prototype = {
 		});
 	},
 
-
 	shouldSaveArtist: function() {
 		return bookshelf.knex.select().from(ArtistModel.prototype.tableName)
 		.where({ musicbrainz_id: this.artist.musicbrainz_id }).limit(1)
-		.then(function(rows) { return _.isEmpty(rows); });
-	},
-
-
-	shouldSaveSimilar: function() {
-		return bookshelf.knex.select().from(SimilarCollection.prototype.model.prototype.tableName)			
-		.where({ artist_musicbrainz_id: this.artist.musicbrainz_id }).limit(1)
-		.then(function(rows) { return _.isEmpty(rows); });
-	},
-
-
-	shouldSaveAlbums: function() {
-		return bookshelf.knex.select().from(AlbumCollection.prototype.model.prototype.tableName)			
-		.where({ artist_musicbrainz_id: this.artist.musicbrainz_id }).limit(1)
-		.then(function(rows) { return _.isEmpty(rows); });
-	},
-
-
-	shouldSaveTags: function() {
-		return bookshelf.knex.select().from(TagCollection.prototype.model.prototype.tableName)			
-		.where({ artist_musicbrainz_id: this.artist.musicbrainz_id }).limit(1)
-		.then(function(rows) { return _.isEmpty(rows); });
-	},
-
-
-	shouldSaveFans: function() {
-		return bookshelf.knex.select().from(FanCollection.prototype.model.prototype.tableName)			
-		.where({ artist_musicbrainz_id: this.artist.musicbrainz_id }).limit(1)
-		.then(function(rows) { return _.isEmpty(rows); });
-	},
-
-
-	shouldSaveTracks: function() {
-		return bookshelf.knex.select().from(TrackCollection.prototype.model.prototype.tableName)			
-		.where({ artist_musicbrainz_id: this.artist.musicbrainz_id }).limit(1)
 		.then(function(rows) { return _.isEmpty(rows); });
 	}
 

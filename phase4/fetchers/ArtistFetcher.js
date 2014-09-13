@@ -18,16 +18,9 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 
 	url: 'http://ws.audioscrobbler.com/2.0/',
 
-	/**
-	 * This fetcher supports omitting certain calls in case they have already been
-	 * fetched. The 'options' object may contain an 'omit' array that may enlist
-	 * the following calls to omit them: 
-	 * [artist, similar, albums, tags, fans, tracks]
-	 */
-	fetch: function(options) {
-		options = options || {};
+
+	fetch: function() {
 		var self = this;
-		var omit = options.omit || [];
 		this.rawArtist = {};
 
 		return Promise.resolve(keymaster.getKey()).then(function(key) {
@@ -37,42 +30,30 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 		})
 
 		.then(keymaster.getKey).then(function(key) {
-
-			if(_.indexOf(omit, 'similar') !== -1) return;
-
+			self.resetPagination();
 			return self.makeRequest(self.generateSimilarRequest(key))
 			.then(_.bind(self.onSimilarRequestDone, self));
 		})
 
 		.then(keymaster.getKey).then(function(key) {
-
-			if(_.indexOf(omit, 'albums') !== -1) return;
-
 			self.resetPagination();
 			return self.makeRequest(self.generateTopAlbumsRequest(key))
 			.then(_.bind(self.onTopAlbumsRequestDone, self));
 		})
 
 		.then(keymaster.getKey).then(function(key) {
-
-			if(_.indexOf(omit, 'tags') !== -1) return;
-
+			self.resetPagination();
 			return self.makeRequest(self.generateTopTagsRequest(key))
 			.then(_.bind(self.onTopTagsRequestDone, self));
 		})
 
 		.then(keymaster.getKey).then(function(key) {
-
-			if(_.indexOf(omit, 'fans') !== -1) return;
-
+			self.resetPagination();
 			return self.makeRequest(self.generateTopFansRequest(key))
 			.then(_.bind(self.onTopFansRequestDone, self));
 		})
 
 		.then(keymaster.getKey).then(function(key) {
-
-			if(_.indexOf(omit, 'tracks') !== -1) return;
-
 			self.resetPagination();
 			return self.makeRequest(self.generateTopTracksRequest(key))
 			.then(_.bind(self.onTopTracksRequestDone, self));
