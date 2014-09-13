@@ -18,7 +18,8 @@ var SimilarCollection = bookshelf.Collection.extend({
 				artist_name: 											response.name,
 				similar_artist_musicbrainz_id: 		similar.mbid,
 				similar_artist_name: 							similar.name,
-				match: 														similar.match
+				match: 														similar.match,
+				timestamp:  											new Date()
 			}));
 		});
 		return this;

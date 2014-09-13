@@ -17,7 +17,8 @@ var TagCollection = bookshelf.Collection.extend({
 				artist_musicbrainz_id: 		response.mbid,
 				artist_name: 							response.name,
 				tag_name: 								tag.name,
-				tag_count: 								tag.count
+				tag_count: 								tag.count,
+				timestamp:  							new Date()
 			}));
 		});
 		return this;
