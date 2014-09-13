@@ -33,26 +33,31 @@ ArtistWorker.prototype = {
 		var tableName = ArtistModel.prototype.tableName;
 
 		this.done = callback;
+		try {
+			return bookshelf.knex.select().from(tableName)
+				.where({ name: this.artist.name || null })
+				.orWhere({ echonest_id: this.artist.echonest_id || null })
 
-		return bookshelf.knex.select().from(tableName)
-			.where({ name: this.artist.name || null })
-			.orWhere({ echonest_id: this.artist.echonest_id || null })
+				.then(function(rows) {
+					return fetchArtistIfNew(rows);
+				})
 
-			.then(function(rows) {
-				return fetchArtistIfNew(rows);
-			})
+				.error(function(error) {
+					logger.error(error);
+				})
 
-			.error(function(error) {
-				logger.error(error);
-			})
+				.catch(function(exception) {
+					logger.error(exception);
+				})
 
-			.catch(function(exception) {
-				logger.error(exception);
-			})
-
-			.finally(function() {
-				self.done();
-			});
+				.finally(function() {
+					self.done();
+				});
+		}
+		catch(e) {
+			logger.error(e);
+			self.done();
+		}
 	},
 
 

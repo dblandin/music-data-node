@@ -26,20 +26,26 @@ ArtistWorker.prototype = {
 		var getAllArtists = _.bind(this.getAllArtists, this);
 
 		this.done = callback;
+		
+		try {
+			return getAllArtists()
 
-		return getAllArtists()
+				.error(function(error) {
+					logger.error(error);
+				})
 
-			.error(function(error) {
-				logger.error(error);
-			})
+				.catch(function(exception) {
+					logger.error(exception);
+				})
 
-			.catch(function(exception) {
-				logger.error(exception);
-			})
-
-			.finally(function() {
-				self.done();
-			});
+				.finally(function() {
+					self.done();
+				});
+		}
+		catch(e) {
+			logger.error(e);
+			self.done();
+		}
 	},
 
 

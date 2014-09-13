@@ -30,24 +30,30 @@ SongWorker.prototype = {
 
 		this.done = callback;
 
-		return bookshelf.knex.select().from(tableName)
-			.where({ echonest_artist_id: this.artist.echonest_id || null })
+		try {
+			return bookshelf.knex.select().from(tableName)
+				.where({ echonest_artist_id: this.artist.echonest_id || null })
 
-			.then(function(rows) {
-				return fetchSongsForArtist(rows);
-			})
+				.then(function(rows) {
+					return fetchSongsForArtist(rows);
+				})
 
-			.error(function(error) {
-				logger.error(error);
-			})
+				.error(function(error) {
+					logger.error(error);
+				})
 
-			.catch(function(exception) {
-				logger.error(exception);
-			})
+				.catch(function(exception) {
+					logger.error(exception);
+				})
 
-			.finally(function() {
-				self.done();
-			});
+				.finally(function() {
+					self.done();
+				});
+		}
+		catch(e) {
+			logger.error(e);
+			self.done();
+		}
 	},
 
 

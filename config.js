@@ -94,7 +94,7 @@ var production = {
 	},
 
 	database: {
-		host: '107.170.133.156',
+		host: '10.128.177.237',
 		port: 48189,
 		user: 'musicdata',
 		password: 'SsD7N4krmQxnQjgzCXzLvmMoQv8ewH9MfssMdvJresAumjToze',

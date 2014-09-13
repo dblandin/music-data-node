@@ -26,19 +26,25 @@ ArtistWorker.prototype = {
 		var self = this;
 		this.done = callback;
 
-		return this.fetchArtistIfValid()
+		try {
+			return Promise.resolve(this.fetchArtistIfValid())
 
-		.error(function(error) {
-			logger.error(error);
-		})
+			.error(function(error) {
+				logger.error(error);
+			})
 
-		.catch(function(exception) {
-			logger.error(exception);
-		})
+			.catch(function(exception) {
+				logger.error(exception);
+			})
 
-		.finally(function() {
+			.finally(function() {
+				self.done();
+			});
+		}
+		catch(e) {
+			logger.error(e);
 			self.done();
-		});
+		}
 	},
 
 
@@ -46,7 +52,7 @@ ArtistWorker.prototype = {
 		var self = this;
 
 		if(!this.artist.musicbrainz_id)
-			throw('No name or musicbrainz_id for artist on phase4');
+			throw('No musicbrainz_id for artist on phase4');
 
 		return Promise.resolve(this.shouldSaveArtist())
 
@@ -103,7 +109,7 @@ ArtistWorker.prototype = {
 		})
 
 		.then(_.bind(function() {
-			logger.info(self.artist.name || self.artist.musicbrainz_id + ' has been successfully added to the database.');
+			logger.info((self.artist.name || self.artist.musicbrainz_id) + ' has been successfully added to the database.');
 		}, self))
 
 		.error(function(error) {
@@ -111,7 +117,7 @@ ArtistWorker.prototype = {
 		})
 
 		.catch(function(exception) {
-			throw(self.artist.name || self.artist.musicbrainz_id + ' failed to save to the database due to ' + exception);
+			throw((self.artist.name || self.artist.musicbrainz_id) + ' failed to save to the database due to ' + exception);
 		});
 	},
 
