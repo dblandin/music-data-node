@@ -18,9 +18,16 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 
 	url: 'http://ws.audioscrobbler.com/2.0/',
 
-
-	fetch: function(callback) {
-		var self = this;		
+	/**
+	 * This fetcher supports omitting certain calls in case they have already been
+	 * fetched. The 'options' object may contain an 'omit' array that may enlist
+	 * the following calls to omit them: 
+	 * [artist, similar, albums, tags, fans, tracks]
+	 */
+	fetch: function(options) {
+		options = options || {};
+		var self = this;
+		var omit = options.omit || [];
 		this.rawArtist = {};
 
 		return Promise.resolve(keymaster.getKey()).then(function(key) {
@@ -31,11 +38,15 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 
 		.then(keymaster.getKey).then(function(key) {
 
+			if(_.indexOf(omit, 'similar') !== -1) return;
+
 			return self.makeRequest(self.generateSimilarRequest(key))
 			.then(_.bind(self.onSimilarRequestDone, self));
 		})
 
 		.then(keymaster.getKey).then(function(key) {
+
+			if(_.indexOf(omit, 'albums') !== -1) return;
 
 			self.resetPagination();
 			return self.makeRequest(self.generateTopAlbumsRequest(key))
@@ -44,17 +55,23 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 
 		.then(keymaster.getKey).then(function(key) {
 
+			if(_.indexOf(omit, 'tags') !== -1) return;
+
 			return self.makeRequest(self.generateTopTagsRequest(key))
 			.then(_.bind(self.onTopTagsRequestDone, self));
 		})
 
 		.then(keymaster.getKey).then(function(key) {
 
+			if(_.indexOf(omit, 'fans') !== -1) return;
+
 			return self.makeRequest(self.generateTopFansRequest(key))
 			.then(_.bind(self.onTopFansRequestDone, self));
 		})
 
 		.then(keymaster.getKey).then(function(key) {
+
+			if(_.indexOf(omit, 'tracks') !== -1) return;
 
 			self.resetPagination();
 			return self.makeRequest(self.generateTopTracksRequest(key))
@@ -136,7 +153,7 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 		if(artist && !_.isEmpty(artist))
 			this.rawArtist =  artist;
 
-		else throw ('Artist not found (phase 4): ' + this.artist.name || this.artist.musicbrainz_id)
+		else throw ('Artist not found (phase 4): ' + this.artist.musicbrainz_id)
 	},
 
 	onSimilarRequestDone: function(response) {

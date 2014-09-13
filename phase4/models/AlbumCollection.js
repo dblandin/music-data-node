@@ -19,7 +19,7 @@ var AlbumCollection = bookshelf.Collection.extend({
 				album_musicbrainz_id: 		album.mbid,
 				album_name:  							album.name,
 				album_rank: 				 			index,
-				album_listeners_count:		album.playcount,
+				album_listeners_count:		parseInt(album.playcount),
 				timestamp:  							new Date()
 			}));
 		});

@@ -15,6 +15,7 @@ var SimilarCollection = bookshelf.Collection.extend({
 			self.add(new self.model({
 
 				artist_musicbrainz_id: 						response.mbid,
+				artist_name: 											response.name,
 				similar_artist_musicbrainz_id: 		similar.mbid,
 				similar_artist_name: 							similar.name,
 				match: 														similar.match

@@ -33,7 +33,7 @@ ArtistScraper.prototype = _.extend({}, echonestFetcher, {
 			if(self.rawArtists && !_.isEmpty(self.rawArtists))
 				return self.rawArtists;
 			else
-				throw('No artists found for query ' + this.query);
+				throw('No artists found for query ' + self.query);
 		});
 	},
 

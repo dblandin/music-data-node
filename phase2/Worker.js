@@ -114,7 +114,7 @@ ArtistWorker.prototype = {
 		})
 
 		.then(_.bind(function() {
-			logger.info(artist.get('name') + ' has been successfully added to the database.');
+			chalk.green.bold(artist.get('name') + ' has been successfully added to the database.');
 		}, this))
 
 		.error(function(error) {

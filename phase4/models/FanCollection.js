@@ -14,10 +14,11 @@ var FanCollection = bookshelf.Collection.extend({
 
 			self.add(new self.model({
 
-				// artist_musicbrainz_id: 						response.mbid,
-				// similar_artist_musicbrainz_id: 		similar.mbid,
-				// similar_artist_name: 							similar.name,
-				// match: 														similar.match
+				artist_musicbrainz_id: 		response.mbid,
+				artist_name: 							response.name,
+				user_name: 								fan.name,
+				weight:  									fan.weight,
+				timestamp: 								new Date()
 			}));
 		});
 		return this;

@@ -14,14 +14,19 @@ var Artist = bookshelf.Model.extend({
 
 			name: 						response.name,
 			musicbrainz_id: 	response.mbid,
-			listeners: 				response.stats.listeners,
-			playcount: 				response.stats.playcount,
-			biography: 				response.bio.content,
+			listeners: 				parseInt(response.stats.listeners),
+			playcount: 				parseInt(response.stats.playcount),
+			biography: 				this.trimAndStripHtml(response.bio.content),
 			biography_date: 	response.bio.published,
 			timestamp: 				new Date()
 
 		});
 		return this;
+	},
+
+
+	trimAndStripHtml: function(text) {
+		return text.replace(/(<([^>]+)>)/ig, '').trim();
 	}
 });
 

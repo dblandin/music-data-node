@@ -14,10 +14,10 @@ var TagCollection = bookshelf.Collection.extend({
 
 			self.add(new self.model({
 
-				// artist_musicbrainz_id: 						response.mbid,
-				// similar_artist_musicbrainz_id: 		tag.mbid,
-				// similar_artist_name: 							tag.name,
-				// match: 														tag.match
+				artist_musicbrainz_id: 		response.mbid,
+				artist_name: 							response.name,
+				tag_name: 								tag.name,
+				tag_count: 								tag.count
 			}));
 		});
 		return this;
