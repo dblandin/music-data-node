@@ -8,7 +8,6 @@ var redisClient = redis.createClient(redisUrl.port, redisUrl.hostname, options);
 var lock = require('redis-lock')(redisClient, 5000);
 
 
-
 var KeyManager = function(args) {
 	var keysContainSecrets = _.sample(args.keys).secret;
 	
@@ -35,6 +34,7 @@ KeyManager.prototype = {
 
 	getKey: function(callback) {
 		var self = this;
+
 		return new Promise(function(resolve, reject) {
 			self.fifo.push({ callback: resolve });
 		});
@@ -54,53 +54,32 @@ KeyManager.prototype = {
 
 	deleteAllKeys: function() {
 		var self = this;
-		return redisClient.delAsync(self.keys[0]).then(function() { redisClient.delAsync(self.keys[1]); });
+		var keysValuePromises = [];
+		for (var i = 0; i < self.keys.length; i++)
+			keysValuePromises.push(redisClient.delAsync(self.keys[i]));
+		
+		return Promise.all(keysValuePromises)
+
+		.then(function(values) {
+			console.log('All keys reset');
+		});
+	},
+
+
+	canUseKey: function(key) {
+		var atomicScript = 'local current;current = redis.call("incr", KEYS[1]);if tonumber(current) == 1 then redis.call("expire",  KEYS[1], ' + self.timeLimit/1000 + ');end;return current;';
+
+		return redisClient.evalAsync(atomicScript, 1, key)
+
+		.then(function(value) {
+			return (value <= self.keyUsagePerTimeLimit);
+		});
 	},
 
 
 	getSecretForKey: function(key) {
 		if(this.keySecretObject)
 			return _.findWhere(this.keySecretObject, {key: key}).secret;
-	},
-
-
-	redisIncrement: function(key) {
-		var self = this;
-		return redisClient.existsAsync(key).then(function(exists) {
-
-			if(exists)
-				return redisClient.incrAsync(key);
-			else
-				return self.resetKey(key).then(function() {
-					return self.redisIncrement(key);
-				});
-		});
-	},
-
-
-	redisGet: function(key) {
-		var self = this;
-		return redisClient.existsAsync(key).then(function(exists) {
-
-			if(exists)
-				return redisClient.getAsync(key);
-			else
-				return self.resetKey(key).then(function() {
-					return self.redisGet(key);
-				});
-		});
-	},
-
-
-	resetKey: function(key) {
-		var self = this;
-		this.keyUsagePerTimeLimit = this.rateLimit;
-		return redisClient.setnxAsync(key, 0)
-
-			.then(function(success) {
-				if (success)
-					return redisClient.expireAsync(key, self.timeLimit/1000);
-			});
 	},
 
 
@@ -164,24 +143,33 @@ KeyManager.prototype = {
 		return new Promise(function(resolve, reject) {
 			lock('l', function(releaseLock) {
 
-				var keysValuePromises = [];
+				var keyIndex = 0;
 
-				for (var i = 0; i < self.keys.length; i++)
-					keysValuePromises.push(self.redisGet(self.keys[i]));
-				
-				Promise.all(keysValuePromises)
+				var iterator = function() {
+					return self.canUseKey(self.keys[keyIndex])
 
-				.then(function(values) {
+					.then(function(useKey) {
+						if(useKey) {
 
-					for (var i = 0; i < values.length; i++)
-						if (parseInt(values[i]) < self.keyUsagePerTimeLimit) {
 							releaseLock();
-							return Promise.resolve(self.redisIncrement(self.keys[i])).then(function() { resolve(self.keys[i]); });
-						}
+							resolve(self.keys[keyIndex]);
+							return;
 
-					releaseLock();
-					reject('No available keys');
-				});
+						} else {
+
+							keyIndex++;
+							if(keyIndex >= self.keys.length) {
+								releaseLock();
+								reject('No available keys');
+								return;
+							}
+
+							return iterator();
+						}
+					})
+				};
+	
+				iterator();
 			});
 		});
 	}

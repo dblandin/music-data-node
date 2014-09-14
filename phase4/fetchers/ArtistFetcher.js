@@ -134,14 +134,21 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 		if(artist && !_.isEmpty(artist))
 			this.rawArtist =  artist;
 
-		else throw ('Artist not found (phase 4): ' + this.artist.musicbrainz_id)
+		else throw ('Artist not found (phase 4): ' + (self.artist.name || self.artist.musicbrainz_id))
 	},
 
 	onSimilarRequestDone: function(response) {
+		if (!_.isEmpty(JSON.parse(response[1])) || !_.isArray(JSON.parse(response[1]).similarartists.artist))
+			return;
+		
 		this.rawArtist.similar = JSON.parse(response[1]).similarartists.artist;
 	},
 
 	onTopAlbumsRequestDone: function(response) {
+
+		if (_.isEmpty(JSON.parse(response[1])))
+			return;
+
 		var self = this;
 		var responseArray = JSON.parse(response[1]).topalbums.album;
 		var attrs = JSON.parse(response[1]).topalbums['@attr'];
@@ -161,7 +168,7 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 	},
 
 	onTopTagsRequestDone: function(response) {
-		if (!_.isArray(JSON.parse(response[1]).toptags.tag))
+		if (!_.isEmpty(JSON.parse(response[1])) || !_.isArray(JSON.parse(response[1]).toptags.tag))
 			return
 
 		this.rawArtist.topTags = this.rawArtist.topTags || [];
@@ -169,7 +176,7 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 	},
 
 	onTopFansRequestDone: function(response) {
-		if (!_.isArray(JSON.parse(response[1]).topfans.user))
+		if (!_.isEmpty(JSON.parse(response[1])) || !_.isArray(JSON.parse(response[1]).topfans.user))
 			return
 
 		this.rawArtist.topFans = this.rawArtist.topFans || [];
@@ -177,6 +184,9 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 	},
 
 	onTopTracksRequestDone: function(response) {
+		if (_.isEmpty(JSON.parse(response[1])))
+			return;
+
 		var self = this;
 		var responseArray = JSON.parse(response[1]).toptracks.track;
 		var attrs = JSON.parse(response[1]).toptracks['@attr'];
@@ -200,11 +210,14 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 
 	getBaseOptions: function(key) {
 		console.log('Key used: ' + key + ', ' + new Date().toISOString());
-		return {
-			api_key: key,
-			mbid: this.artist.musicbrainz_id,
-			format: 'json'
-		};
+		var requestOptions = { api_key: key, format: 'json' };
+
+		if(this.artist.musicbrainz_id)
+			requestOptions.mbid = this.artist.musicbrainz_id;
+		else
+			requestOptions.artist = this.artist.name;
+
+		return requestOptions;
 	},
 	
 	shouldContinuePagination: function(response, property) {

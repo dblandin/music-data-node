@@ -51,8 +51,8 @@ ArtistWorker.prototype = {
 	fetchArtistIfValid: function() {
 		var self = this;
 
-		if(!this.artist.musicbrainz_id)
-			throw('No musicbrainz_id for artist on phase4');
+		if(!this.artist.musicbrainz_id && !this.artist.name)
+			throw('No musicbrainz_id or name for artist on phase4');
 
 		return Promise.resolve(this.shouldSaveArtist())
 
@@ -71,20 +71,6 @@ ArtistWorker.prototype = {
 				});
 			}
 		});
-	},
-
-
-	existsInDatabase: function(musicbrainz_id) {
-		if(!musicbrainz_id)
-			return false;
-
-		return bookshelf.knex.select().from(ArtistModel.prototype.tableName)
-			
-			.where({ musicbrainz_id: musicbrainz_id })
-
-			.then(function(rows) {
-				return rows.length > 0;
-			});
 	},
 
 
@@ -121,9 +107,12 @@ ArtistWorker.prototype = {
 		});
 	},
 
+
 	shouldSaveArtist: function() {
+		var query = this.artist.musicbrainz_id ? { musicbrainz_id: this.artist.musicbrainz_id } : { name: this.artist.name }
+
 		return bookshelf.knex.select().from(ArtistModel.prototype.tableName)
-		.where({ musicbrainz_id: this.artist.musicbrainz_id }).limit(1)
+		.where(query).limit(1)
 		.then(function(rows) { return _.isEmpty(rows); });
 	}
 

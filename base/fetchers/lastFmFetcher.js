@@ -23,7 +23,7 @@ var echonestFetcher = {
 	getErrorFromResponse: function(response) {
 		var parsedResponse = JSON.parse(response[1]);
 
-		if (!parsedResponse)
+		if (!_.isString(parsedResponse) && !parsedResponse)
 			return 'Missing response from LastFm.';
 
 		if (parsedResponse.error)

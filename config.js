@@ -63,6 +63,7 @@ var production = {
 	rabbitMq: {
 		connection: {
 			host: '10.128.230.150', 
+			// host: '107.170.110.40', 
 			port: 5672,
 			login: 'musicdata',
 			password: 'UmifHiRXq74xyckG',
@@ -95,6 +96,7 @@ var production = {
 
 	database: {
 		host: '10.128.177.237',
+		// host: '107.170.133.156',
 		port: 48189,
 		user: 'musicdata',
 		password: 'SsD7N4krmQxnQjgzCXzLvmMoQv8ewH9MfssMdvJresAumjToze',
@@ -106,6 +108,7 @@ var production = {
 		url: {
 			port: 6379,
 			hostname: '10.128.177.237'
+			// hostname: '107.170.133.156'
 		}
 	}
 };
