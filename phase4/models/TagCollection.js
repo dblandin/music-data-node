@@ -10,6 +10,10 @@ var TagCollection = bookshelf.Collection.extend({
 	
 	extractFromRawResponse: function(response) {
 		var self = this;
+
+		!_.isArray(response.topTags)
+			return;
+
 		_.each(response.topTags, function(tag, index) {
 
 			self.add(new self.model({

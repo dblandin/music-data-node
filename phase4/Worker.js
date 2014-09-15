@@ -87,23 +87,29 @@ ArtistWorker.prototype = {
 	
 			return Promise.resolve(artist.save(null, { transacting: t }))
 
-			.then(function() { return albumCollection.saveAll(null, { transacting: t }); })
-			.then(function() { return fanCollection.saveAll(null, { transacting: t }); })
-			.then(function() { return similarCollection.saveAll(null, { transacting: t }); })
-			.then(function() { return tagCollection.saveAll(null, { transacting: t }); })
-			.then(function() { return trackCollection.saveAll(null, { transacting: t }); })
+			.then(function() { 
+				if(!_.isEmpty(albumCollection)) return albumCollection.saveAll(null, { transacting: t });
+		  })
+			.then(function() { 
+				if(!_.isEmpty(fanCollection)) return fanCollection.saveAll(null, { transacting: t });
+		  })
+			.then(function() { 
+				if(!_.isEmpty(similarCollection)) return similarCollection.saveAll(null, { transacting: t });
+		  })
+			.then(function() { 
+				if(!_.isEmpty(tagCollection)) return tagCollection.saveAll(null, { transacting: t });
+		  })
+			.then(function() { 
+				if(!_.isEmpty(trackCollection)) return trackCollection.saveAll(null, { transacting: t });
+		  })
 		})
 
 		.then(_.bind(function() {
 			logger.info((self.artist.name || self.artist.musicbrainz_id) + ' has been successfully added to the database.');
 		}, self))
 
-		.error(function(error) {
-			throw('Error during transaction for artist ' + self.artist.name || self.artist.musicbrainz_id + ' ' + error);
-		})
-
-		.catch(function(exception) {
-			throw((self.artist.name || self.artist.musicbrainz_id) + ' failed to save to the database due to ' + exception);
+		.catch(function(err) {
+			throw((self.artist.name || self.artist.musicbrainz_id) + ' failed to save to the database due to ' + err);
 		});
 	},
 

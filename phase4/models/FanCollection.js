@@ -10,6 +10,10 @@ var FanCollection = bookshelf.Collection.extend({
 	
 	extractFromRawResponse: function(response) {
 		var self = this;
+
+		!_.isArray(response.topFans)
+			return;
+
 		_.each(response.topFans, function(fan, index) {
 
 			self.add(new self.model({
