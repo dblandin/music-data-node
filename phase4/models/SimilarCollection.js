@@ -11,7 +11,7 @@ var SimilarCollection = bookshelf.Collection.extend({
 	extractFromRawResponse: function(response) {
 		var self = this;
 
-		!_.isArray(response.similar)
+		if (!_.isArray(response.similar))
 			return;
 
 		_.each(response.similar, function(similar, index) {

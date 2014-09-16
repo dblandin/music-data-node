@@ -11,7 +11,7 @@ var TrackCollection = bookshelf.Collection.extend({
 	extractFromRawResponse: function(response) {
 		var self = this;
 
-		!_.isArray(response.topTracks)
+		if (!_.isArray(response.topTracks))
 			return;
 
 		_.each(response.topTracks, function(track, index) {

@@ -11,7 +11,7 @@ var AlbumCollection = bookshelf.Collection.extend({
 	extractFromRawResponse: function(response) {
 		var self = this;
 
-		!_.isArray(response.topAlbums)
+		if (!_.isArray(response.topAlbums))
 			return;
 
 		_.each(response.topAlbums, function(album, index) {

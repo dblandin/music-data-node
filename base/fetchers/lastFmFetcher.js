@@ -11,8 +11,12 @@ var echonestFetcher = {
 
 			var error = self.getErrorFromResponse(response);
 
-			if(error)
-				throw (error)
+			if(error) {
+				if(error.retry && _.isNumber(self.retryCount) && _.isNumber(self.retryLimit) && self.retryCount<self.retryLimit)
+					return null;
+				else
+					throw (error.message);
+			}
 
 			else
 				return response;
@@ -34,20 +38,62 @@ var echonestFetcher = {
 
 
 	errors: {
-		2: 'Invalid service - This service does not exist',
-		3: 'Invalid Method - No method with that name in this package',
-		4: 'Authentication Failed - You do not have permissions to access the service',
-		5: 'Invalid format - This service doesn\'t exist in that format',
-		6: 'Invalid parameters - Your request is missing a required parameter',
-		7: 'Invalid resource specified',
-		8: 'Operation failed - Something else went wrong',
-		9: 'Invalid session key - Please re-authenticate',
-		10: 'Invalid API key - You must be granted a valid key by last.fm',
-		11: 'Service Offline - This service is temporarily offline. Try again later.',
-		13: 'Invalid method signature supplied',
-		16: 'There was a temporary error processing your request. Please try again',
-		26: 'Suspended API key - Access for your account has been suspended, please contact Last.fm',
-		29: 'Rate limit exceeded - Your IP has made too many requests in a short period'
+		2: { 
+			message: 'Invalid service - This service does not exist', 
+			retry: false
+		},
+		3: { 
+			message: 'Invalid Method - No method with that name in this package', 
+			retry: false
+		},
+		4: { 
+			message: 'Authentication Failed - You do not have permissions to access the service', 
+			retry: false
+		},
+		5: { 
+			message: 'Invalid format - This service doesn\'t exist in that format', 
+			retry: false
+		},
+		6: { 
+			message: 'Invalid parameters - Your request is missing a required parameter', 
+			retry: false
+		},
+		7: { 
+			message: 'Invalid resource specified', 
+			retry: false
+		},
+		8: { 
+			message: 'Operation failed - Something else went wrong', 
+			retry: false
+		},
+		9: { 
+			message: 'Invalid session key - Please re-authenticate', 
+			retry: false
+		},
+		10: { 
+			message: 'Invalid API key - You must be granted a valid key by last.fm', 
+			retry: false
+		},
+		11: { 
+			message: 'Service Offline - This service is temporarily offline. Try again later.', 
+			retry: true
+		},
+		13: { 
+			message: 'Invalid method signature supplied', 
+			retry: false
+		},
+		16: { 
+			message: 'There was a temporary error processing your request. Please try again', 
+			retry: true
+		},
+		26: { 
+			message: 'Suspended API key - Access for your account has been suspended, please contact Last.fm', 
+			retry: false
+		},
+		29: { 
+			message: 'Rate limit exceeded - Your IP has made too many requests in a short period', 
+			retry: false
+		}
 	}
 };
 

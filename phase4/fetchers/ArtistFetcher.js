@@ -17,44 +17,46 @@ var ArtistFetcher = function(artist) {
 ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 
 	url: 'http://ws.audioscrobbler.com/2.0/',
-
+	retryLimit: 5,
 
 	fetch: function() {
 		var self = this;
+		var clean = _.bind(this.resetGlobalRequestParameters, this);
 		this.rawArtist = {};
+		clean();
+		return Promise.resolve(keymaster.getKey())
 
-		return Promise.resolve(keymaster.getKey()).then(function(key) {
-
+		.then(function(key) {
 			return self.makeRequest(self.generateArtistInfoRequest(key))
 			.then(_.bind(self.onArtistInfoRequestDone, self));
 		})
 
 		.then(keymaster.getKey).then(function(key) {
-			self.resetPagination();
+			clean();
 			return self.makeRequest(self.generateSimilarRequest(key))
 			.then(_.bind(self.onSimilarRequestDone, self));
 		})
 
 		.then(keymaster.getKey).then(function(key) {
-			self.resetPagination();
+			clean();
 			return self.makeRequest(self.generateTopAlbumsRequest(key))
 			.then(_.bind(self.onTopAlbumsRequestDone, self));
 		})
 
 		.then(keymaster.getKey).then(function(key) {
-			self.resetPagination();
+			clean();
 			return self.makeRequest(self.generateTopTagsRequest(key))
 			.then(_.bind(self.onTopTagsRequestDone, self));
 		})
 
 		.then(keymaster.getKey).then(function(key) {
-			self.resetPagination();
+			clean();
 			return self.makeRequest(self.generateTopFansRequest(key))
 			.then(_.bind(self.onTopFansRequestDone, self));
 		})
 
 		.then(keymaster.getKey).then(function(key) {
-			self.resetPagination();
+			clean();
 			return self.makeRequest(self.generateTopTracksRequest(key))
 			.then(_.bind(self.onTopTracksRequestDone, self));
 		})
@@ -130,6 +132,15 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 	/** Success callbacks */
 
 	onArtistInfoRequestDone: function(response) {
+		var self = this;
+
+		if (_.isNull(response)) { // null response indicates we need to retry
+			this.retryCount++;
+			return Promise.resolve(keymaster.getKey()).then(function(key) {
+				return self.makeRequest(self.generateArtistInfoRequest(key)).then(_.bind(self.onArtistInfoRequestDone, self));
+			}); 
+		}
+
 		var artist = JSON.parse(response[1]).artist;
 		if(artist && !_.isEmpty(artist))
 			this.rawArtist =  artist;
@@ -138,21 +149,37 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 	},
 
 	onSimilarRequestDone: function(response) {
-		if (!_.isEmpty(JSON.parse(response[1])) || !_.isArray(JSON.parse(response[1]).similarartists.artist))
+		var self = this;
+
+		if (_.isNull(response)) { // null response indicates we need to retry
+			this.retryCount++;
+			return Promise.resolve(keymaster.getKey()).then(function(key) {
+				return self.makeRequest(self.generateSimilarRequest(key)).then(_.bind(self.onSimilarRequestDone, self));
+			}); 
+		}
+
+		if (_.isEmpty(JSON.parse(response[1])) || !_.isArray(JSON.parse(response[1]).similarartists.artist))
 			return;
 		
 		this.rawArtist.similar = JSON.parse(response[1]).similarartists.artist;
 	},
 
 	onTopAlbumsRequestDone: function(response) {
+		var self = this;
+
+		if (_.isNull(response)) { // null response indicates we need to retry
+			this.retryCount++;
+			return Promise.resolve(keymaster.getKey()).then(function(key) {
+				return self.makeRequest(self.generateTopAlbumsRequest(key)).then(_.bind(self.onTopAlbumsRequestDone, self));
+			}); 
+		}
 
 		if (_.isEmpty(JSON.parse(response[1])))
 			return;
 
-		var self = this;
 		var responseArray = JSON.parse(response[1]).topalbums.album;
 		var attrs = JSON.parse(response[1]).topalbums['@attr'];
-		var shouldContinuePagination = attrs && attrs.totalPages ? parseInt(attrs.totalPages) > this.page : responseArray && responseArray.length && responseArray.length === this.biteSize;
+		var shouldContinuePagination = !!(attrs && attrs.totalPages) ? parseInt(attrs.totalPages) > this.page : responseArray && responseArray.length && responseArray.length === this.biteSize;
 
 		if (_.isArray(responseArray)) {
 			this.rawArtist.topAlbums = this.rawArtist.topAlbums || [];
@@ -168,7 +195,16 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 	},
 
 	onTopTagsRequestDone: function(response) {
-		if (!_.isEmpty(JSON.parse(response[1])) || !_.isArray(JSON.parse(response[1]).toptags.tag))
+		var self = this;
+
+		if (_.isNull(response)) { // null response indicates we need to retry
+			this.retryCount++;
+			return Promise.resolve(keymaster.getKey()).then(function(key) {
+				return self.makeRequest(self.generateTopTagsRequest(key)).then(_.bind(self.onTopTagsRequestDone, self));
+			}); 
+		}
+
+		if (_.isEmpty(JSON.parse(response[1])) || !_.isArray(JSON.parse(response[1]).toptags.tag))
 			return
 
 		this.rawArtist.topTags = this.rawArtist.topTags || [];
@@ -176,7 +212,16 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 	},
 
 	onTopFansRequestDone: function(response) {
-		if (!_.isEmpty(JSON.parse(response[1])) || !_.isArray(JSON.parse(response[1]).topfans.user))
+		var self = this;
+
+		if (_.isNull(response)) { // null response indicates we need to retry
+			this.retryCount++;
+			return Promise.resolve(keymaster.getKey()).then(function(key) {
+				return self.makeRequest(self.generateTopFansRequest(key)).then(_.bind(self.onTopFansRequestDone, self));
+			}); 
+		}
+
+		if (_.isEmpty(JSON.parse(response[1])) || !_.isArray(JSON.parse(response[1]).topfans.user))
 			return
 
 		this.rawArtist.topFans = this.rawArtist.topFans || [];
@@ -184,13 +229,22 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 	},
 
 	onTopTracksRequestDone: function(response) {
+		var self = this;
+
+		if (_.isNull(response)) { // null response indicates we need to retry
+			this.retryCount++;
+			return Promise.resolve(keymaster.getKey()).then(function(key) {
+				return self.makeRequest(self.generateTopTracksRequest(key)).then(_.bind(self.onTopTracksRequestDone, self));
+			}); 
+		}
+
 		if (_.isEmpty(JSON.parse(response[1])))
 			return;
 
 		var self = this;
 		var responseArray = JSON.parse(response[1]).toptracks.track;
 		var attrs = JSON.parse(response[1]).toptracks['@attr'];
-		var shouldContinuePagination = attrs && attrs.totalPages ? parseInt(attrs.totalPages) > this.page : responseArray && responseArray.length && responseArray.length === this.biteSize;
+		var shouldContinuePagination = !!(attrs && attrs.totalPages) ? parseInt(attrs.totalPages) > this.page : responseArray && responseArray.length && responseArray.length === this.biteSize;
 
 		if (_.isArray(responseArray)) {
 			this.rawArtist.topTracks = this.rawArtist.topTracks || [];
@@ -231,9 +285,10 @@ ArtistFetcher.prototype = _.extend({}, lastFmFetcher, {
 			return responseArray.length === this.biteSize;
 	},
 
-	resetPagination: function() {
+	resetGlobalRequestParameters: function() {
 		this.biteSize = 100;
 		this.page = 0;
+		this.retryCount = 0;
 	}
 });
 
