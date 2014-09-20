@@ -105,7 +105,7 @@ ArtistWorker.prototype = {
 		})
 
 		.then(_.bind(function() {
-			logger.info((self.artist.name || self.artist.musicbrainz_id) + ' has been successfully added to the database.');
+			console.log(chalk.green.bold((self.artist.name || self.artist.musicbrainz_id) + ' has been successfully added to the database.'));
 		}, self))
 
 		.catch(function(err) {
