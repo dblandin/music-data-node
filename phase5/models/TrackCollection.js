@@ -23,6 +23,7 @@ var TrackCollection = bookshelf.Collection.extend({
 				album_lastfm_id: 					response.id,
 				track_name: 							track.name,
 				track_musicbrainz_id: 		track.mbid,
+				track_duration:  					track.duration ? parseInt(track.duration) : null,
 				position: 								index + 1,
 				timestamp: 								new Date()
 				

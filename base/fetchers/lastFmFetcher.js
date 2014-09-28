@@ -48,11 +48,11 @@ var echonestFetcher = {
 		},
 		4: { 
 			message: 'Authentication Failed - You do not have permissions to access the service', 
-			retry: false
+			retry: true
 		},
 		5: { 
 			message: 'Invalid format - This service doesn\'t exist in that format', 
-			retry: false
+			retry: true
 		},
 		6: { 
 			message: 'Invalid parameters - Your request is missing a required parameter', 
@@ -60,19 +60,19 @@ var echonestFetcher = {
 		},
 		7: { 
 			message: 'Invalid resource specified', 
-			retry: false
+			retry: true
 		},
 		8: { 
 			message: 'Operation failed - Something else went wrong', 
-			retry: false
+			retry: true
 		},
 		9: { 
 			message: 'Invalid session key - Please re-authenticate', 
-			retry: false
+			retry: true
 		},
 		10: { 
 			message: 'Invalid API key - You must be granted a valid key by last.fm', 
-			retry: false
+			retry: true
 		},
 		11: { 
 			message: 'Service Offline - This service is temporarily offline. Try again later.', 
@@ -92,7 +92,7 @@ var echonestFetcher = {
 		},
 		29: { 
 			message: 'Rate limit exceeded - Your IP has made too many requests in a short period', 
-			retry: false
+			retry: true
 		}
 	}
 };

@@ -30,11 +30,11 @@ ArtistWorker.prototype = {
 			return Promise.resolve(this.fetchArtistIfValid())
 
 			.error(function(error) {
-				logger.error(error);
+				logger.error(self.getArtistString() + ' - ' + error);
 			})
 
 			.catch(function(exception) {
-				logger.error(exception);
+				logger.error(self.getArtistString() + ' - ' + exception);
 			})
 
 			.finally(function() {
@@ -42,7 +42,7 @@ ArtistWorker.prototype = {
 			});
 		}
 		catch(e) {
-			logger.error(e);
+			logger.error(self.getArtistString() + ' - ' + e);
 			self.done();
 		}
 	},
@@ -59,7 +59,7 @@ ArtistWorker.prototype = {
 		.then(function(shouldFetch) {
 		
 			if(!shouldFetch)
-				console.log(chalk.blue.bold('Artist ' + (self.artist.name || self.artist.musicbrainz_id) + ' has been already fetched.'));
+				console.log(chalk.blue.bold(self.getArtistString() + ' has been already fetched.'));
 
 			else {
 				var artistFetcher = new ArtistFetcher(self.artist);
@@ -105,11 +105,11 @@ ArtistWorker.prototype = {
 		})
 
 		.then(_.bind(function() {
-			console.log(chalk.green.bold((self.artist.name || self.artist.musicbrainz_id) + ' has been successfully added to the database.'));
+			console.log(chalk.green.bold(self.getArtistString() + ' has been successfully added to the database.'));
 		}, self))
 
 		.catch(function(err) {
-			throw((self.artist.name || self.artist.musicbrainz_id) + ' failed to save to the database due to ' + err);
+			throw(self.getArtistString() + ' failed to save to the database due to ' + err);
 		});
 	},
 
@@ -120,6 +120,11 @@ ArtistWorker.prototype = {
 		return bookshelf.knex.select().from(ArtistModel.prototype.tableName)
 		.where(query).limit(1)
 		.then(function(rows) { return _.isEmpty(rows); });
+	},
+
+
+	getArtistString: function() {
+		return 'Artist name: ' + (this.artist.name || 'none') + ', mbid: ' +  (this.artist.musicbrainz_id || 'none');
 	}
 
 };
