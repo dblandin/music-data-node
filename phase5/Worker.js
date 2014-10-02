@@ -27,11 +27,23 @@ AlbumWorker.prototype = {
 			return Promise.resolve(this.fetchAlbumIfValid())
 
 			.error(function(error) {
-				logger.error(error);
+				var errorMessage;
+				if(!error)
+					errorMessage = 'Unknown error (null error object)';
+				else
+					errorMessage = _.isString(error) ? error : (error.message || 'Unknown error');
+
+				logger.error(self.getAlbumString() + ' - ' + errorMessage);
 			})
 
 			.catch(function(exception) {
-				logger.error(exception);
+				var errorMessage;
+				if(!exception)
+					errorMessage = 'Unknown error (null error object)';
+				else
+					errorMessage = _.isString(exception) ? exception : (exception.message || 'Unknown error');
+
+				logger.error(self.getAlbumString() + ' - ' + errorMessage);
 			})
 
 			.finally(function() {
@@ -39,7 +51,13 @@ AlbumWorker.prototype = {
 			});
 		}
 		catch(e) {
-			logger.error(e);
+			var errorMessage
+			if(!e)
+				errorMessage = 'Unknown error (null error object)';
+			else
+				errorMessage = _.isString(e) ? e : (e.message || 'Unknown error');
+
+			logger.error(self.getAlbumString() + ' - ' + errorMessage);
 			self.done();
 		}
 	},
@@ -52,14 +70,14 @@ AlbumWorker.prototype = {
 			throw('No musicbrainz_id or name for album on phase4');
 
 		if(!this.album.artist_name && !this.album.musicbrainz_id)
-			throw('No artist name for album ' + this.getAlbumString());
+			throw('No artist name for album ' + self.getAlbumString());
 
 		return Promise.resolve(this.shouldSaveAlbum())
 
 		.then(function(shouldFetch) {
 		
 			if(!shouldFetch)
-				console.log(chalk.blue.bold('Album ' + this.getAlbumString() + ' has been already fetched.'));
+				console.log(chalk.blue.bold('Album ' + self.getAlbumString() + ' has been already fetched.'));
 
 			else {
 				var albumFetcher = new AlbumFetcher(self.album);
@@ -80,6 +98,10 @@ AlbumWorker.prototype = {
 		var tagCollection = new TagCollection().extractFromRawResponse(rawAlbum);
 		var trackCollection = new TrackCollection().extractFromRawResponse(rawAlbum);
 
+		console.log(chalk.yellow.bold('Check for the duplicate in DB before saving'));
+		console.log(chalk.yellow.bold('Check for numeric numbers correct parsing. Including NaN.'));
+
+
 		return bookshelf.transaction(function(t) {
 	
 			return Promise.resolve(album.save(null, { transacting: t }))
@@ -93,11 +115,11 @@ AlbumWorker.prototype = {
 		})
 
 		.then(_.bind(function() {
-			console.log(chalk.green.bold('Album ' + this.getAlbumString() + ' has been successfully added to the database.'));
+			console.log(chalk.green.bold('Album ' + self.getAlbumString() + ' has been successfully added to the database.'));
 		}, self))
 
 		.catch(function(err) {
-			throw('Album ' + this.getAlbumString() + ' failed to save to the database due to ' + err);
+			throw('Album ' + self.getAlbumString() + ' failed to save to the database due to ' + err);
 		});
 	},
 

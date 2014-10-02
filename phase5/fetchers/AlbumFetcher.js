@@ -48,12 +48,13 @@ AlbumFetcher.prototype = _.extend({}, lastFmFetcher, {
 	/** Request generators */
 
 	generateAlbumInfoRequest: function(key) {
-		var parameters = _.extend({ method: 'album.getInfo' }, this.getBaseOptions(key));
-		return { url: url.parse(this.url + '?' + querystring.stringify(parameters)) };
+		return this._generateRequest('album.getInfo', key);
 	},
-
 	generateTopTagsRequest: function(key) {
-		var parameters = _.extend({ method: 'artist.getTopTags'	}, this.getBaseOptions(key));
+		return this._generateRequest('album.getTopTags', key);
+	},
+	_generateRequest: function(methodName, key) {
+		var parameters = _.extend({ method: methodName	}, this.getBaseOptions(key));
 		return { url: url.parse(this.url + '?' + querystring.stringify(parameters)) };
 	},
 
@@ -74,7 +75,7 @@ AlbumFetcher.prototype = _.extend({}, lastFmFetcher, {
 		if(album && !_.isEmpty(album))
 			this.rawAlbum =  album;
 
-		else throw ('Artist not found (phase 4): ' + self.getAlbumString());
+		else throw ('Album not found (phase 4): ' + self.getAlbumString());
 	},
 
 	onTopTagsRequestDone: function(response) {
@@ -88,7 +89,7 @@ AlbumFetcher.prototype = _.extend({}, lastFmFetcher, {
 		}
 
 		if (_.isEmpty(JSON.parse(response[1])) || !_.isArray(JSON.parse(response[1]).toptags.tag))
-			return
+			return;
 
 		this.rawAlbum.topTags = this.rawAlbum.topTags || [];
 		this.rawAlbum.topTags = this.rawAlbum.topTags.concat(JSON.parse(response[1]).toptags.tag);
