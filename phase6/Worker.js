@@ -1,4 +1,4 @@
-var logger = require('../base/logManager').getLoggerForFile('./phase5/logs/phase5.log');
+var logger = require('../base/logManager').getLoggerForFile('./phase6/logs/phase6.log');
 var chalk = require('chalk');
 var TrackFetcher = require('./fetchers/TrackFetcher');
 var Promise = require('bluebird');
@@ -67,7 +67,7 @@ TrackWorker.prototype = {
 		var self = this;
 
 		if(!this.track.musicbrainz_id && !this.track.name)
-			throw('No musicbrainz_id or name for track on phase4');
+			throw('No musicbrainz_id or name for track on phase6');
 
 		if(!this.track.artist_name && !this.track.musicbrainz_id)
 			throw('No artist name for track ' + self.getTrackString());

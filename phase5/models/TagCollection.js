@@ -16,13 +16,15 @@ var TagCollection = bookshelf.Collection.extend({
 
 		_.each(response.topTags, function(tag, index) {
 
+			var count = _.isNaN(parseInt(tag.count)) ? null : parseInt(tag.count);
+
 			self.add(new self.model({
 
 				album_musicbrainz_id: 		response.mbid,
 				album_name: 							response.name,
 				album_lastfm_id: 					response.id,
 				tag_name: 								tag.name,
-				tag_count: 								tag.count,
+				tag_count: 								count,
 				timestamp:  							new Date()
 			}));
 		});

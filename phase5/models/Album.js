@@ -14,6 +14,7 @@ var Album = bookshelf.Model.extend({
 			return;
 
 		var listeners = _.isNaN(parseInt(response.listeners)) ? null : parseInt(response.listeners);
+		var playcount = _.isNaN(parseInt(response.playcount)) ? null : parseInt(response.playcount);
 
 		this.set({
 
@@ -24,7 +25,7 @@ var Album = bookshelf.Model.extend({
 			artist_musicbrainz_id:  response.artist_musicbrainz_id,
  			release_date: 					response.releasedate.trim(),
 			listeners_count: 				listeners,
-			playcount: 							response.playcount,
+			playcount: 							playcount,
 			timestamp: 							new Date()
 
 		});

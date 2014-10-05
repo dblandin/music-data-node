@@ -13,29 +13,29 @@ var options = {
 	lastFm: {
 		keys: [
 			{
-				key: '0e9488a190653e73d49ced7681de73cb',
-				secret: '6967955dda561acbbfb4f1e532e7b76b'
+				key: 'da94dd72bba15f27861856851fa3297d',
+				secret: '82abdd72ac9e1fc3598ed038c841a03f'
 			},
 			{
-				key: '10506a7478bf8f5397c67cf733bb81c4',
-				secret: 'cf867dfb7fa3766e82e83869ea5a4c89'
+				key: 'de2acb1686be4c9744c4c32784f7a651',
+				secret: 'a61711eb6833a87a826b76a32ef4a610'
 			},
 			{
-				key: '13f17d552c4577fd81f341ed4996b7d1',
-				secret: 'fc59dbb09338f411c09af6290595d467'
+				key: 'df305863ea2abd812de2e884a0ac0af6',
+				secret: '53177946dcfe53a66be0e40d6e0970a7'
 			},
 			{
-				key: '18e6991012c12d1cea7db05ad6669c6c',
-				secret: '07d2c25400dc7b58eaeeba61a9db55c0'
+				key: 'dfa90a2ce0df543b01090e6f34ef06b0',
+				secret: '73044b780c5eb1cbc9d07fdee06c024a'
 			},
 			{
-				key: '20545e275660be5ca40cffdbd0f0b273',
-				secret: '332b41216405a7c1eacd2bafaccef3da'
+				key: 'e5cc9865a36a093d1a7ba5ba25bd0b1c',
+				secret: '14fb8d0d0f565838dae8f09c8a9de4c5'
 			},
 			{
-				key: '2063336b0d35794a38bcc6cc8cb1cea8',
-				secret: 'ac7cff047364d164bb032162ee361b67'
-			},
+				key: 'eec32985cce8d06cd6ae630087d366c2',
+				secret: 'a017701a0611ebc6751c007f5ce5de6a'
+			},				
 			{
 				key: '2d46418cc96776a97b5cab1cb804e622',
 				secret: '9bdc36bbd2aa69e30e53586a8bdd46bf'
@@ -261,6 +261,30 @@ var options = {
 				secret: '84fbc1d46bc265cb5412d4d7d5930e66'
 			},
 			{
+				key: '0e9488a190653e73d49ced7681de73cb',
+				secret: '6967955dda561acbbfb4f1e532e7b76b'
+			},
+			{
+				key: '10506a7478bf8f5397c67cf733bb81c4',
+				secret: 'cf867dfb7fa3766e82e83869ea5a4c89'
+			},
+			{
+				key: '13f17d552c4577fd81f341ed4996b7d1',
+				secret: 'fc59dbb09338f411c09af6290595d467'
+			},
+			{
+				key: '18e6991012c12d1cea7db05ad6669c6c',
+				secret: '07d2c25400dc7b58eaeeba61a9db55c0'
+			},
+			{
+				key: '20545e275660be5ca40cffdbd0f0b273',
+				secret: '332b41216405a7c1eacd2bafaccef3da'
+			},
+			{
+				key: '2063336b0d35794a38bcc6cc8cb1cea8',
+				secret: 'ac7cff047364d164bb032162ee361b67'
+			},
+			{
 				key: 'b95a30697e22c08cbebb1c6eb5f525e8',
 				secret: 'edad838ea06a58be4cca956ac05acc80'
 			},
@@ -271,30 +295,6 @@ var options = {
 			{
 				key: 'c4e7e3883c2d0d655ff9d80e667f988d',
 				secret: 'e0748a3181334a80cf4a977e3ab1c7a2'
-			},
-			{
-				key: 'da94dd72bba15f27861856851fa3297d',
-				secret: '82abdd72ac9e1fc3598ed038c841a03f'
-			},
-			{
-				key: 'de2acb1686be4c9744c4c32784f7a651',
-				secret: 'a61711eb6833a87a826b76a32ef4a610'
-			},
-			{
-				key: 'df305863ea2abd812de2e884a0ac0af6',
-				secret: '53177946dcfe53a66be0e40d6e0970a7'
-			},
-			{
-				key: 'dfa90a2ce0df543b01090e6f34ef06b0',
-				secret: '73044b780c5eb1cbc9d07fdee06c024a'
-			},
-			{
-				key: 'e5cc9865a36a093d1a7ba5ba25bd0b1c',
-				secret: '14fb8d0d0f565838dae8f09c8a9de4c5'
-			},
-			{
-				key: 'eec32985cce8d06cd6ae630087d366c2',
-				secret: 'a017701a0611ebc6751c007f5ce5de6a'
 			},
 			{
 				key: 'fb25b1d08d658cac530e1e1ca762a33a',

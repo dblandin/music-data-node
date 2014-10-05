@@ -2,6 +2,7 @@ var amqp = require('amqp');
 var config = require('./config').rabbitMq;
 var chalk = require('chalk');
 
+var ArtistWorkerPhase0 = require('./phase0/Worker');
 var ArtistWorkerPhase1 = require('./phase1/Worker');
 var ArtistWorkerPhase2 = require('./phase2/Worker');
 var SongWorkerPhase3 = require('./phase3/Worker');
@@ -21,6 +22,19 @@ module.exports = {
 				queue.subscribe({ ack: true }, function(message, headers, deliveryInfo, messageObject) {
 
 					switch (message.phase) {
+
+
+						case 0:
+							if(!message.query) {
+								messageObject.acknowledge(false);
+								break;
+							}
+							var worker = new ArtistWorkerPhase0(message.query);
+							worker.start(function() {
+								console.log(chalk.gray('Message ACKed'));
+								messageObject.acknowledge(false);
+							});
+							break;
 
 
 						case 1:

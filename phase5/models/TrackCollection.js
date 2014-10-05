@@ -16,6 +16,8 @@ var TrackCollection = bookshelf.Collection.extend({
 
 		_.each(response.tracks.track, function(track, index) {
 
+			var duration = (track.duration && !_.isNaN(parseFloat(track.duration))) ? parseFloat(track.duration) : null;
+
 			self.add(new self.model({
 
 				album_musicbrainz_id: 		response.mbid,
@@ -23,7 +25,7 @@ var TrackCollection = bookshelf.Collection.extend({
 				album_lastfm_id: 					response.id,
 				track_name: 							track.name,
 				track_musicbrainz_id: 		track.mbid,
-				track_duration:  					track.duration ? parseInt(track.duration) : null,
+				track_duration:  					duration,
 				position: 								index + 1,
 				timestamp: 								new Date()
 				
