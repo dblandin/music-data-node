@@ -35,23 +35,12 @@ var ArtistCollection = bookshelf.Collection.extend({
 	},
 
 
-	// Overriden to check for duplicates before saving
+	// Overriden to avoid overflowing the DB server with requests
 	saveAll: function(parameters, options) {
 		
 		return Promise.map(this.models, function(model) {
-
-			var storedProcedure = 'phase0_insert_if_missing'; // assigns now() to update and create
-			var _name = (model.get('name')) || '';
-			var _musicbrainz_id = (model.get('musicbrainz_id')) || '';
-
-			var query = 'SELECT "' + storedProcedure + '"($$' + _name + '$$, $$' + _musicbrainz_id + '$$);';
-
-			return bookshelf.knex.raw(query)
-
-			.catch(function(err) {
-			  throw(err);
-			});
-		}, { concurrency: 3 });
+			return model.save(parameters, options);
+		}, { concurrency: 10 });
 	}
 
 });
