@@ -16,14 +16,18 @@ var TrackCollection = bookshelf.Collection.extend({
 
 		_.each(response.topTracks, function(track, index) {
 
+			var track_duration = _.isNaN(parseInt(track.duration)) ? 0 : parseInt(track.duration);
+			var track_plays_count = _.isNaN(parseInt(track.playcount)) ? 0 : parseInt(track.playcount);
+			var track_listeners_count = _.isNaN(parseInt(track.listeners)) ? 0 : parseInt(track.listeners);
+
 			self.add(new self.model({
 
 				artist_musicbrainz_id: 		response.mbid,
 				artist_name: 							response.name,
 				track_name: 							track.name,
-				track_duration: 					parseInt(track.duration),
-				track_plays_count: 				parseInt(track.playcount),
-				track_listeners_count: 		parseInt(track.listeners),
+				track_duration: 					track_duration,
+				track_plays_count: 				track_plays_count,
+				track_listeners_count: 		track_listeners_count,
 				track_musicbrainz_id: 		track.mbid,
 				rank: 										index,
 				timestamp: 								new Date()

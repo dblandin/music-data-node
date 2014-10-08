@@ -15,15 +15,17 @@ var AlbumCollection = bookshelf.Collection.extend({
 			return;
 
 		_.each(response.topAlbums, function(album, index) {
-
-			self.add(new self.model({
+			
+			var album_listeners_count = _.isNaN(parseInt(album.playcount)) ? 0 : parseInt(album.playcount);
+			
+			self.add(new self.model({	
 
 				artist_name:  						response.name,
 				artist_musicbrainz_id: 		response.mbid,
 				album_musicbrainz_id: 		album.mbid,
 				album_name:  							album.name,
 				album_rank: 				 			index,
-				album_listeners_count:		parseInt(album.playcount),
+				album_listeners_count:		album_listeners_count,
 				timestamp:  							new Date()
 			}));
 		});

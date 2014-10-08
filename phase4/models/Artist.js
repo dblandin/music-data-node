@@ -10,12 +10,15 @@ var Artist = bookshelf.Model.extend({
 
 	extractFromRawResponse: function(response) {
 
+		var playcount = _.isNaN(parseInt(response.stats.playcount)) ? 0 : parseInt(response.stats.playcount);
+		var listeners = _.isNaN(parseInt(response.stats.listeners)) ? 0 : parseInt(response.stats.listeners);
+
 		this.set({
 
 			name: 						response.name,
 			musicbrainz_id: 	response.mbid,
-			listeners: 				parseInt(response.stats.listeners),
-			playcount: 				parseInt(response.stats.playcount),
+			listeners: 				listeners,
+			playcount: 				playcount,
 			biography: 				this.trimAndStripHtml(response.bio.content),
 			biography_date: 	response.bio.published,
 			timestamp: 				new Date()
