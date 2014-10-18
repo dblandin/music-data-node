@@ -10,6 +10,10 @@ var SimilarCollection = bookshelf.Collection.extend({
 	
 	extractFromRawResponse: function(response) {
 		var self = this;
+
+		if(!_.isArray(response.newSimilar))
+			return;
+
 		_.each(response.newSimilar, function(similar, index) {
 
 			self.add(new self.model({

@@ -10,6 +10,10 @@ var GenreCollection = bookshelf.Collection.extend({
 	
 	extractFromRawResponse: function(response) {
 		var self = this;
+
+		if(!_.isArray(response.genres))
+			return;
+
 		_.each(response.genres, function(genre, index) {
 
 			self.add(new self.model({

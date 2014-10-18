@@ -13,6 +13,10 @@ var ReviewCollection = bookshelf.Collection.extend({
 	
 	extractFromRawResponse: function(response) {
 		var self = this;
+
+		if(!_.isArray(response.reviews))
+			return;
+
 		_.each(_.first(response.reviews, this.limitPerArtist), function(review) {
 
 			self.add(new self.model({

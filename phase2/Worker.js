@@ -1,6 +1,7 @@
 var util = require('util');
 var _ = require('underscore');
 var bookshelf = require('../base/bookshelf');
+var util = require('../base/utilities');
 var Promise = require('bluebird');
 var chalk = require('chalk');
 var logger = require('../base/logManager').getLoggerForFile('./phase2/logs/phase2.log');
@@ -29,53 +30,53 @@ ArtistWorker.prototype = {
 
 	start: function(callback) {
 		var self = this;
-		var fetchArtistIfNew = _.bind(this.fetchArtistIfNew, this);
-		var tableName = ArtistModel.prototype.tableName;
 
 		this.done = callback;
 		try {
-			return bookshelf.knex.select().from(tableName)
-				.where({ name: this.artist.name || null })
-				.orWhere({ echonest_id: this.artist.echonest_id || null })
 
-				.then(function(rows) {
-					return fetchArtistIfNew(rows);
-				})
+			return Promise.resolve(this.fetchArtistIfValid())
 
-				.error(function(error) {
-					logger.error(error);
-				})
+			.error(function(error) {
+				logger.error(self.getArtistString() + ' - ' + util.getErrorString(error));
+			})
 
-				.catch(function(exception) {
-					logger.error(exception);
-				})
+			.catch(function(exception) {
+				logger.error(self.getArtistString() + ' - ' + util.getErrorString(exception));
+			})
 
-				.finally(function() {
-					self.done();
-				});
+			.finally(function() {
+				self.done();
+			});
 		}
 		catch(e) {
-			logger.error(e);
+			logger.error(self.getArtistString() + ' - ' + util.getErrorString(e));
 			self.done();
 		}
 	},
 
 
-	fetchArtistIfNew: function(duplicates) {
-		var artistFetcher = new ArtistFetcher(this.artist);
+	fetchArtistIfValid: function() {
 		var self = this;
 
-		if (duplicates.length > 0) {
-			console.log(chalk.blue.bold(this.artist.name + ' is already in the database'));
-			return;
-		}
+		if(!this.artist || (!this.artist.name && !this.artist.echonest_id))
+			throw('No artist name nor echonest_id for artist on phase 2');
 
-		console.log('Fetching ' + this.artist.name);
+		return Promise.resolve(this.shouldSaveArtist())
 
-		return Promise.resolve(artistFetcher.fetch())
+		.then(function(shouldFetch) {
 
-		.then(function(rawArtist) {
-			return self.save(rawArtist);
+			if(!shouldFetch)
+				console.log(chalk.blue.bold(self.getArtistString() + ' has been already fetched.'));
+
+			else {
+				var artistFetcher = new ArtistFetcher(self.artist);
+
+				return Promise.resolve(artistFetcher.fetch())
+
+				.then(function(rawArtist) {
+					return self.save(rawArtist);
+				});
+			}
 		});
 	},
 
@@ -84,7 +85,6 @@ ArtistWorker.prototype = {
 		var self =						this;
 		var artist = 					new ArtistModel().extractFromRawResponse(rawArtist);
 		var terms = 					new TermCollection().extractFromRawResponse(rawArtist);
-		var genres = 					new GenreCollection().extractFromRawResponse(rawArtist);
 		var biographies = 		new BiographyCollection().extractFromRawResponse(rawArtist);
 		var reviews = 				new ReviewCollection().extractFromRawResponse(rawArtist);
 		var similarities = 		new SimilarCollection().extractFromRawResponse(rawArtist);
@@ -97,9 +97,6 @@ ArtistWorker.prototype = {
 
 			.then(function() {
 				return terms.saveAll(null, { transacting: t });
-			})
-			.then(function() {
-				return genres.saveAll(null, { transacting: t });
 			})
 			.then(function() {
 				return biographies.saveAll(null, { transacting: t });
@@ -119,24 +116,32 @@ ArtistWorker.prototype = {
 		})
 
 		.then(_.bind(function() {
-			chalk.green.bold(artist.get('name') + ' has been successfully added to the database.');
-		}, this))
+			console.log(chalk.green.bold(self.getArtistString() + ' has been successfully added to the database.'));
+		}, self))
 
 		.error(function(error) {
-			throw('Error during transaction for artist ' + artist.get('name') + ' ' + error);
+			throw('Error during transaction for artist ' + self.getArtistString() + ' ' + error);
 		})
 
 		.catch(function(exception) {
-			throw(artist.get('name') + ' failed to save to the database due to ' + exception);
+			throw(self.getArtistString() + ' failed to save to the database due to ' + exception);
 		});
 	},
 
-	hasDuplicatesInDatabase: function(artist) {
+
+	shouldSaveArtist: function() {
+		var query = this.artist.echonest_id ? { echonest_id: this.artist.echonest_id } : { name: this.artist.name }
+
 		return bookshelf.knex.select().from(ArtistModel.prototype.tableName)
-			.where({ echonest_id: artist.get('echonest_id') })
-			.then(function(duplicates) {
-				return (duplicates.length > 0);
-			});
+		.where(query).limit(1)
+		.then(function(rows) { 
+			return _.isEmpty(rows); 
+		});
+	},
+
+
+	getArtistString: function() {
+		return 'Artist name: ' + (this.artist.name || 'none') + ', mbid: ' +  (this.artist.echonest_id || 'none');
 	}
 
 };

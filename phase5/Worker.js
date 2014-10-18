@@ -3,6 +3,7 @@ var chalk = require('chalk');
 var AlbumFetcher = require('./fetchers/AlbumFetcher');
 var Promise = require('bluebird');
 var bookshelf = require('../base/bookshelf');
+var util = require('../base/utilities');
 var _ = require('underscore');
 
 var AlbumModel = require('./models/Album');
@@ -27,37 +28,19 @@ AlbumWorker.prototype = {
 			return Promise.resolve(this.fetchAlbumIfValid())
 
 			.error(function(error) {
-				var errorMessage;
-				if(!error)
-					errorMessage = 'Unknown error (null error object)';
-				else
-					errorMessage = _.isString(error) ? error : (error.message || 'Unknown error');
-
-				logger.error(self.getAlbumString() + ' - ' + errorMessage);
+				logger.error(self.getAlbumString() + ' - ' + util.getErrorString(error));
 			})
 
 			.catch(function(exception) {
-				var errorMessage;
-				if(!exception)
-					errorMessage = 'Unknown error (null error object)';
-				else
-					errorMessage = _.isString(exception) ? exception : (exception.message || 'Unknown error');
-
-				logger.error(self.getAlbumString() + ' - ' + errorMessage);
+				logger.error(self.getAlbumString() + ' - ' + util.getErrorString(exception));
 			})
 
 			.finally(function() {
 				self.done();
 			});
 		}
-		catch(e) {
-			var errorMessage
-			if(!e)
-				errorMessage = 'Unknown error (null error object)';
-			else
-				errorMessage = _.isString(e) ? e : (e.message || 'Unknown error');
-
-			logger.error(self.getAlbumString() + ' - ' + errorMessage);
+		catch(exception) {
+			logger.error(self.getAlbumString() + ' - ' + util.getErrorString(exception));
 			self.done();
 		}
 	},

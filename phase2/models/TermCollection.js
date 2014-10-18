@@ -10,6 +10,10 @@ var TermCollection = bookshelf.Collection.extend({
 	
 	extractFromRawResponse: function(response) {
 		var self = this;
+
+		if(!_.isArray(response.terms))
+			return;
+
 		_.each(response.terms, function(term) {
 
 			self.add(new self.model({

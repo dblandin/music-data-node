@@ -3,6 +3,7 @@ var chalk = require('chalk');
 var ArtistFetcher = require('./fetchers/ArtistFetcher');
 var Promise = require('bluebird');
 var bookshelf = require('../base/bookshelf');
+var util = require('../base/utilities');
 var _ = require('underscore');
 
 var ArtistModel = require('./models/Artist');
@@ -30,11 +31,11 @@ ArtistWorker.prototype = {
 			return Promise.resolve(this.fetchArtistIfValid())
 
 			.error(function(error) {
-				logger.error(self.getArtistString() + ' - ' + error);
+				logger.error(self.getArtistString() + ' - ' + util.getErrorString(error));
 			})
 
 			.catch(function(exception) {
-				logger.error(self.getArtistString() + ' - ' + exception);
+				logger.error(self.getArtistString() + ' - ' + util.getErrorString(exception));
 			})
 
 			.finally(function() {
@@ -42,7 +43,7 @@ ArtistWorker.prototype = {
 			});
 		}
 		catch(e) {
-			logger.error(self.getArtistString() + ' - ' + e);
+			logger.error(self.getArtistString() + ' - ' + util.getErrorString(e));
 			self.done();
 		}
 	},

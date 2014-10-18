@@ -16,5 +16,13 @@ module.exports = {
 		return _.map(rawIds, function(rawId) {
 			return rawId.foreign_id.split(':').pop();
 		});
+	},
+
+	getErrorString: function(error) {
+		var errorMessage;
+		if(!error)
+			return 'Unknown error (null error object)';
+		else
+			return _.isString(error) ? error : (error.message || 'Unknown error');
 	}
 }

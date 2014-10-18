@@ -13,6 +13,10 @@ var BiographyCollection = bookshelf.Collection.extend({
 	
 	extractFromRawResponse: function(response) {
 		var self = this;
+
+		if(!_.isArray(response.biographies))
+			return;
+
 		_.each(_.first(response.biographies, this.limitPerArtist), function(biography) {
 
 			self.add(new self.model({

@@ -32,10 +32,24 @@ var Artist = bookshelf.Model.extend({
 			end_3: 						years && years.length >= 3 ? years[2].end : null,
 			familiarity: 			response.familiarity,
 			hotttnesss: 			response.hotttnesss,
+			genres: 					this.getGenresString(response.genres),
 			timestamp: 				new Date()
 
 		});
 		return this;
+	},
+
+
+	getGenresString: function(genresArray) {
+		var genres = '';
+		
+		if(!genresArray || !_.isArray(genresArray))
+			return genres;
+
+		for (var i = 0; i < genresArray.length; i++)
+			genres += (genresArray[i].name + ',');
+		
+		return genres.slice(0, -1);
 	}
 });
 
