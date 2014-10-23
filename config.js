@@ -95,8 +95,8 @@ var production = {
 	},
 
 	database: {
-		host: '10.128.177.237',
-		// host: '107.170.133.156',
+		host: '10.128.230.146',
+		// host: '107.170.178.206',
 		port: 48189,
 		user: 'musicdata',
 		password: 'SsD7N4krmQxnQjgzCXzLvmMoQv8ewH9MfssMdvJresAumjToze',
@@ -107,8 +107,8 @@ var production = {
 	redis: {
 		url: {
 			port: 6379,
-			hostname: '10.128.177.237'
-			// hostname: '107.170.133.156'
+			hostname: '10.128.230.146'
+			// hostname: '107.170.178.206',
 		}
 	}
 };
