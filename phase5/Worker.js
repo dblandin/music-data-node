@@ -81,9 +81,7 @@ AlbumWorker.prototype = {
 		var tagCollection = new TagCollection().extractFromRawResponse(rawAlbum);
 		var trackCollection = new TrackCollection().extractFromRawResponse(rawAlbum);
 
-		console.log(chalk.yellow.bold('Check for the duplicate in DB before saving'));
-		console.log(chalk.yellow.bold('Check for numeric numbers correct parsing. Including NaN.'));
-
+		// TODO - check for duplicates before saving to DB.
 
 		return bookshelf.transaction(function(t) {
 	

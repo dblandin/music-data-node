@@ -3,6 +3,7 @@ var chalk = require('chalk');
 var TrackFetcher = require('./fetchers/TrackFetcher');
 var Promise = require('bluebird');
 var bookshelf = require('../base/bookshelf');
+var util = require('../base/utilities');
 var _ = require('underscore');
 
 var TagCollection = require('./models/TagCollection');
@@ -27,23 +28,11 @@ TrackWorker.prototype = {
 			return Promise.resolve(this.fetchTrackIfValid())
 
 			.error(function(error) {
-				var errorMessage;
-				if(!error)
-					errorMessage = 'Unknown error (null error object)';
-				else
-					errorMessage = _.isString(error) ? error : (error.message || 'Unknown error');
-
-				logger.error(self.getTrackString() + ' - ' + errorMessage);
+				logger.error(self.getTrackString() + ' - ' + util.getErrorString(error));
 			})
 
 			.catch(function(exception) {
-				var errorMessage;
-				if(!exception)
-					errorMessage = 'Unknown error (null error object)';
-				else
-					errorMessage = _.isString(exception) ? exception : (exception.message || 'Unknown error');
-
-				logger.error(self.getTrackString() + ' - ' + errorMessage);
+				logger.error(self.getTrackString() + ' - ' + util.getErrorString(exception));
 			})
 
 			.finally(function() {
@@ -51,13 +40,7 @@ TrackWorker.prototype = {
 			});
 		}
 		catch(e) {
-			var errorMessage
-			if(!e)
-				errorMessage = 'Unknown error (null error object)';
-			else
-				errorMessage = _.isString(e) ? e : (e.message || 'Unknown error');
-
-			logger.error(self.getTrackString() + ' - ' + errorMessage);
+			logger.error(self.getTrackString() + ' - ' + util.getErrorString(e));
 			self.done();
 		}
 	},
@@ -76,8 +59,7 @@ TrackWorker.prototype = {
 
 		.then(function(shouldFetch) {
 		
-			// if(!shouldFetch)
-			if(false)
+			if(!shouldFetch)
 				console.log(chalk.blue.bold('Track ' + self.getTrackString() + ' has been already fetched.'));
 
 			else {
@@ -105,10 +87,10 @@ TrackWorker.prototype = {
 			return Promise.resolve(tagCollection.saveAll(null, { transacting: t }))
 
 			.then(function() { 
-				if(!_.isEmpty(tagCollection)) return fanCollection.saveAll(null, { transacting: t });
+				if(!_.isEmpty(fanCollection)) return fanCollection.saveAll(null, { transacting: t });
 		  })
 			.then(function() { 
-				if(!_.isEmpty(fanCollection)) return similarCollection.saveAll(null, { transacting: t });
+				if(!_.isEmpty(similarCollection)) return similarCollection.saveAll(null, { transacting: t });
 		  })
 		})
 
@@ -123,19 +105,16 @@ TrackWorker.prototype = {
 
 
 	shouldSaveTrack: function() {
+		// Since we have no main table, we will use the top_fans one to 
+		// determine is a track has already been fetched or not.
 		var query = {};
 		
-		if (this.track.musicbrainz_id)  query.musicbrainz_id = this.track.musicbrainz_id;
-		if (this.track.name) query.name = this.track.name;
-		if (this.track.artist_musicbrainz_id) query.artist_musicbrainz_id = this.track.artist_musicbrainz_id;
-		if (this.track.artist_name) query.artist_name = this.track.artist_name;
+		query.track_musicbrainz_id = this.track.musicbrainz_id ? this.track.musicbrainz_id : null;
+		query.track_name = this.track.name ? this.track.name : null;
 
-		console.log(chalk.yellow.bold('"shouldSaveTrack" is returning true always. The check for duplicates is done with hard coded false.'));
-		return true;
-
-		// return bookshelf.knex.select().from(TrackModel.prototype.tableName)
-		// .where(query).limit(1)
-		// .then(function(rows) { return _.isEmpty(rows); });
+		return bookshelf.knex.select().from(FanCollection.prototype.model.prototype.tableName)
+		.where(query).limit(1)
+		.then(function(rows) { return _.isEmpty(rows); });
 	},
 
 

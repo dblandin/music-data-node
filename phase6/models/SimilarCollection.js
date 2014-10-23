@@ -12,9 +12,11 @@ var SimilarCollection = bookshelf.Collection.extend({
 		var self = this;
 
 		if (!_.isArray(response.similar))
-			return;
+			return this;
 
 		_.each(response.similar, function(similar, index) {
+
+			var match = _.isNaN(parseFloat(similar.match)) ? null : parseFloat(similar.match);
 
 			self.add(new self.model({
 
@@ -22,7 +24,7 @@ var SimilarCollection = bookshelf.Collection.extend({
 				track_name: 											response.name,
 				similar_track_musicbrainz_id: 		similar.mbid,
 				similar_track_name: 							similar.name,
-				match: 														similar.match,
+				match: 														match,
 				timestamp:  											new Date()
 
 			}));

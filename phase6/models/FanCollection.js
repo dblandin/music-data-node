@@ -12,16 +12,18 @@ var FanCollection = bookshelf.Collection.extend({
 		var self = this;
 
 		if (!_.isArray(response.topFans))
-			return;
+			return this;
 
 		_.each(response.topFans, function(fan, index) {
+
+			var weight = _.isNaN(parseInt(fan.weight)) ? null : parseInt(fan.weight);
 
 			self.add(new self.model({
 
 				track_musicbrainz_id: 		response.mbid,
 				track_name: 							response.name,
 				user_name: 								fan.name,
-				weight:  									fan.weight,
+				weight:  									weight,
 				timestamp: 								new Date()
 				
 			}));
