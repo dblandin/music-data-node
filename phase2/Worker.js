@@ -59,7 +59,7 @@ ArtistWorker.prototype = {
 		var self = this;
 
 		if(!this.artist || (!this.artist.name && !this.artist.echonest_id))
-			throw('No artist name nor echonest_id for artist on phase 2');
+			throw('No artist name or echonest_id for artist on phase 2');
 
 		return Promise.resolve(this.shouldSaveArtist())
 
@@ -135,7 +135,7 @@ ArtistWorker.prototype = {
 		return bookshelf.knex.select().from(ArtistModel.prototype.tableName)
 		.where(query).limit(1)
 		.then(function(rows) { 
-			return _.isEmpty(rows); 
+			return _.isEmpty(rows);
 		});
 	},
 

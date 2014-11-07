@@ -20,6 +20,8 @@ var TagCollection = bookshelf.Collection.extend({
 
 			self.add(new self.model({
 
+				artist_name: 							response.artist_name,
+				artist_musicbrainz_id: 		response.artist_musicbrainz_id,
 				track_musicbrainz_id: 		response.mbid,
 				track_name: 							response.name,
 				tag_name: 								tag.name,
