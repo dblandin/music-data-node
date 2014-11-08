@@ -37,11 +37,11 @@ TrackFetcher.prototype = _.extend({}, lastFmFetcher, {
 			.then(_.bind(self.onTopFansRequestDone, self));
 		})
 
-		.then(keymaster.getKey).then(function(key) {
-			clean();
-			return self.makeRequest(self.generateSimilarRequest(key))
-			.then(_.bind(self.onSimilarRequestDone, self));;
-		})
+		// .then(keymaster.getKey).then(function(key) {
+		// 	clean();
+		// 	return self.makeRequest(self.generateSimilarRequest(key))
+		// 	.then(_.bind(self.onSimilarRequestDone, self));;
+		// })
 
 		.then(function() {
 			if(self.track.artist_musicbrainz_id && !_.isEmpty(self.track.artist_musicbrainz_id))

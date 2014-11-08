@@ -80,7 +80,7 @@ TrackWorker.prototype = {
 
 		var tagCollection = new TagCollection().extractFromRawResponse(rawTrack);
 		var fanCollection = new FanCollection().extractFromRawResponse(rawTrack);
-		var similarCollection = new SimilarCollection().extractFromRawResponse(rawTrack);
+		// var similarCollection = new SimilarCollection().extractFromRawResponse(rawTrack);
 
 		return bookshelf.transaction(function(t) {
 	
@@ -89,9 +89,9 @@ TrackWorker.prototype = {
 			.then(function() { 
 				if(!_.isEmpty(fanCollection)) return fanCollection.saveAll(null, { transacting: t });
 		  })
-			.then(function() { 
-				if(!_.isEmpty(similarCollection)) return similarCollection.saveAll(null, { transacting: t });
-		  })
+			// .then(function() { 
+			// 	if(!_.isEmpty(similarCollection)) return similarCollection.saveAll(null, { transacting: t });
+		 //  })
 		})
 
 		.then(_.bind(function() {
