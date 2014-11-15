@@ -88,10 +88,10 @@ SongWorker.prototype = {
 		
 		return bookshelf.transaction(function(t) {
 
-			return Promise.resolve(songs.saveAll(null, { transacting: t}))
+			return Promise.resolve(songs.insertAll(null, { transacting: t}))
 
 			.then(function() {
-				return songTypes.saveAll(null, { transacting: t });
+				return songTypes.insertAll(null, { transacting: t });
 			})
 		})
 

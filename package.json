@@ -19,6 +19,7 @@
     "bluebird": "2.2.x",
     "redis-lock": "0.0.x",
     "chalk": "0.5.x",
-    "winston": "0.7.3"
+    "winston": "0.7.3",
+    "nodebrainz": "1.0.x"
   }
 }

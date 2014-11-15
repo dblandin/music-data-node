@@ -89,19 +89,19 @@ ArtistWorker.prototype = {
 			return Promise.resolve(artist.save(null, { transacting: t }))
 
 			.then(function() { 
-				if(!_.isEmpty(albumCollection)) return albumCollection.saveAll(null, { transacting: t });
+				if(!_.isEmpty(albumCollection)) return albumCollection.insertAll(null, { transacting: t });
 		  })
 			.then(function() { 
-				if(!_.isEmpty(fanCollection)) return fanCollection.saveAll(null, { transacting: t });
+				if(!_.isEmpty(fanCollection)) return fanCollection.insertAll(null, { transacting: t });
 		  })
 			.then(function() { 
-				if(!_.isEmpty(similarCollection)) return similarCollection.saveAll(null, { transacting: t });
+				if(!_.isEmpty(similarCollection)) return similarCollection.insertAll(null, { transacting: t });
 		  })
 			.then(function() { 
-				if(!_.isEmpty(tagCollection)) return tagCollection.saveAll(null, { transacting: t });
+				if(!_.isEmpty(tagCollection)) return tagCollection.insertAll(null, { transacting: t });
 		  })
 			.then(function() { 
-				if(!_.isEmpty(trackCollection)) return trackCollection.saveAll(null, { transacting: t });
+				if(!_.isEmpty(trackCollection)) return trackCollection.insertAll(null, { transacting: t });
 		  })
 		})
 

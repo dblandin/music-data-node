@@ -84,13 +84,13 @@ TrackWorker.prototype = {
 
 		return bookshelf.transaction(function(t) {
 	
-			return Promise.resolve(tagCollection.saveAll(null, { transacting: t }))
+			return Promise.resolve(tagCollection.insertAll(null, { transacting: t }))
 
 			.then(function() { 
-				if(!_.isEmpty(fanCollection)) return fanCollection.saveAll(null, { transacting: t });
+				if(!_.isEmpty(fanCollection)) return fanCollection.insertAll(null, { transacting: t });
 		  })
 			// .then(function() { 
-			// 	if(!_.isEmpty(similarCollection)) return similarCollection.saveAll(null, { transacting: t });
+			// 	if(!_.isEmpty(similarCollection)) return similarCollection.insertAll(null, { transacting: t });
 		 //  })
 		})
 

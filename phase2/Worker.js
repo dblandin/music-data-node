@@ -96,22 +96,22 @@ ArtistWorker.prototype = {
 			return Promise.resolve(artist.save(null, { transacting: t }))
 
 			.then(function() {
-				return terms.saveAll(null, { transacting: t });
+				return terms.insertAll(null, { transacting: t });
 			})
 			.then(function() {
-				return biographies.saveAll(null, { transacting: t });
+				return biographies.insertAll(null, { transacting: t });
 			})
 			.then(function() {
-				return reviews.saveAll(null, { transacting: t });
+				return reviews.insertAll(null, { transacting: t });
 			})
 			.then(function() {
-				return similarities.saveAll(null, { transacting: t });
+				return similarities.insertAll(null, { transacting: t });
 			})
 			.then(function() {
-				return oldSimilarities.saveAll(null, { transacting: t });
+				return oldSimilarities.insertAll(null, { transacting: t });
 			})
 			.then(function() {
-				return newSimilarities.saveAll(null, { transacting: t });
+				return newSimilarities.insertAll(null, { transacting: t });
 			})
 		})
 

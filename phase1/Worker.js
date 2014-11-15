@@ -66,7 +66,7 @@ ArtistWorker.prototype = {
 		var artists = new ArtistCollection().extractFromRawResponse(rawArtist);
 
 		return bookshelf.transaction(function(t) {
-			return Promise.resolve(artists.saveAll(null, { transacting: t }));
+			return Promise.resolve(artists.insertAll(null, { transacting: t }));
 		})
 
 		.then(_.bind(function() {

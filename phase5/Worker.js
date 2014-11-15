@@ -88,10 +88,10 @@ AlbumWorker.prototype = {
 			return Promise.resolve(album.save(null, { transacting: t }))
 
 			.then(function() { 
-				if(!_.isEmpty(tagCollection)) return tagCollection.saveAll(null, { transacting: t });
+				if(!_.isEmpty(tagCollection)) return tagCollection.insertAll(null, { transacting: t });
 		  })
 			.then(function() { 
-				if(!_.isEmpty(trackCollection)) return trackCollection.saveAll(null, { transacting: t });
+				if(!_.isEmpty(trackCollection)) return trackCollection.insertAll(null, { transacting: t });
 		  })
 		})
 
