@@ -23,9 +23,6 @@ var KeyManager = function(args) {
 
 	_.bindAll(this, 'getKey', 'getAllKeys', 'setRateLimit', 'deleteAllKeys', 'getSecretForKey');
 
-	/**
-	 *  Execute the loop to treat fifoQueue elements.
-	 */
 	this.loop();
 };
 
@@ -37,6 +34,8 @@ KeyManager.prototype = {
 
 		return new Promise(function(resolve, reject) {
 			self.fifo.push({ callback: resolve });
+			if(self.fifo.length === 1)
+				self.loop();
 		});
 	},
 
@@ -67,6 +66,7 @@ KeyManager.prototype = {
 
 
 	canUseKey: function(key) {
+		var self = this;
 		var atomicScript = 'local current;current = redis.call("incr", KEYS[1]);if tonumber(current) == 1 then redis.call("expire",  KEYS[1], ' + self.timeLimit/1000 + ');end;return current;';
 
 		return redisClient.evalAsync(atomicScript, 1, key)
@@ -92,44 +92,21 @@ KeyManager.prototype = {
 	loop: function() {
 		var self = this;
 
-		if (_.isEmpty(this.fifo)) {
-			_.delay(_.bind(this.loop, this), 31);
+		if (_.isEmpty(this.fifo))
 			return;
-		}
+		
 		var next = this.fifo[0];
 
-		Promise.resolve(this.resolveKey())
+		Promise.resolve(this.getUsableKey())
 
 		.then(function(key) {
 			next.callback(key);
 			self.fifo = self.fifo.slice(1);
-			_.defer(loop);
+			_.defer(_.bind(self.loop, self));
 		})
 
 		.catch(function(exc){
-			_.delay(_.bind(self.loop, self), 31);
-		});
-	},
-
-
-	/**
-	 *  Returns a promise that is resolved if a valid key is found
-	 *  and rejected if there are no more available keys. It will also 
-	 *  increment the key value in redis.
-	 */
-	resolveKey: function() {
-		self = this;
-		return new Promise(function(resolve, reject) {
-
-			Promise.resolve(self.getUsableKey())
-
-			.then(function(key) {
-				resolve(key);
-			})
-
-			.catch(function(exc) {
-				reject('No available keys');
-			});
+			_.defer(_.bind(self.loop, self));
 		});
 	},
 
