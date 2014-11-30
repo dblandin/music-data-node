@@ -16,7 +16,7 @@ var KeyManager = function(args) {
 
 	this.margin = args.margin || 0;
 	this.rateLimit = args.rateLimit - args.margin;
-	this.timeLimit = args.timeLimit;
+	this.timeLimit = args.timeLimit + 5; // 5 milliseconds to compensate for redis inaccuracy
 	this.keyUsagePerTimeLimit = this.rateLimit;
 
 	this.fifo = [];
@@ -67,7 +67,7 @@ KeyManager.prototype = {
 
 	canUseKey: function(key) {
 		var self = this;
-		var atomicScript = 'local current;current = redis.call("incr", KEYS[1]);if tonumber(current) == 1 then redis.call("expire",  KEYS[1], ' + self.timeLimit/1000 + ');end;return current;';
+		var atomicScript = 'local current;current = redis.call("incr", KEYS[1]);if tonumber(current) == 1 then redis.call("pexpire",  KEYS[1], ' + self.timeLimit + ');end;return current;';
 
 		return redisClient.evalAsync(atomicScript, 1, key)
 

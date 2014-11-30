@@ -107,14 +107,17 @@ TrackWorker.prototype = {
 	shouldSaveTrack: function() {
 		// Since we have no main table, we will use the top_fans one to 
 		// determine is a track has already been fetched or not.
-		var query = {};
-		
-		query.track_musicbrainz_id = this.track.musicbrainz_id ? this.track.musicbrainz_id : null;
-		query.track_name = this.track.name ? this.track.name : null;
 
-		return bookshelf.knex.select().from(FanCollection.prototype.model.prototype.tableName)
-		.where(query).limit(1)
-		.then(function(rows) { return _.isEmpty(rows); });
+		return true; // Perf issues checking before, we just fetch and worry later
+
+		// var query = {};
+		
+		// query.track_musicbrainz_id = this.track.musicbrainz_id ? this.track.musicbrainz_id : null;
+		// query.track_name = this.track.name ? this.track.name : null;
+
+		// return bookshelf.knex.select().from(FanCollection.prototype.model.prototype.tableName)
+		// .where(query).limit(1)
+		// .then(function(rows) { return _.isEmpty(rows); });
 	},
 
 

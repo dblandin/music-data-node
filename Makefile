@@ -1,3 +1,3 @@
 test:
-	@./node_modules/.bin/mocha -u tdd --timeout 10000
+	@./node_modules/.bin/mocha -u tdd --timeout 100000
 .PHONY: test

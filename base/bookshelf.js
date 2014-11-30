@@ -26,19 +26,9 @@ bookshelfInstance.Collection.prototype.saveAll = function(parameters, options) {
 };
 
 bookshelfInstance.Collection.prototype.insertAll = function() {
-	// if empty return
-	if(this.isEmpty()) {
-		console.log('Empty collection, nothing to insert');
+	if(this.isEmpty() || !this.model.prototype.tableName)
 		return;
-	}
-
-	// if no table name error
-	if(!this.model.prototype.tableName){
-		console.log('No table name specified.');
-		return;
-	}
-
-	// return knex
+	
 	return bookshelfInstance.knex(this.model.prototype.tableName).insert(this.toJSON());
 };
 
