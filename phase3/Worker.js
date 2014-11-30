@@ -1,5 +1,5 @@
 var events = require('events');
-var util = require('util');
+var util = require('../base/utilities');
 var _ = require('underscore');
 var bookshelf = require('../base/bookshelf');
 var Promise = require('bluebird');
@@ -25,55 +25,58 @@ SongWorker.prototype = {
 
 	start: function(callback) {
 		var self = this;
-		var fetchSongsForArtist = _.bind(this.fetchSongsForArtist, this);
+		var fetchSongsIfValid = _.bind(this.fetchSongsIfValid, this);
 		var tableName = SongModel.prototype.tableName;
 
 		this.done = callback;
 
 		try {
-			return bookshelf.knex.select().from(tableName)
-				.where({ echonest_artist_id: this.artist.echonest_id || null })
 
-				.then(function(rows) {
-					return fetchSongsForArtist(rows);
-				})
+			return Promise.resolve(this.fetchSongsIfValid())
 
-				.error(function(error) {
-					logger.error(error);
-				})
+			.error(function(error) {
+				logger.error(self.getArtistString() + ' - ' + util.getErrorString(error));
+			})
 
-				.catch(function(exception) {
-					logger.error(exception);
-				})
+			.catch(function(exception) {
+				logger.error(self.getArtistString() + ' - ' + util.getErrorString(exception));
+			})
 
-				.finally(function() {
-					self.done();
-				});
+			.finally(function() {
+				self.done();
+			});
+
 		}
 		catch(e) {
-			logger.error(e);
+			logger.error(self.getArtistString() + ' - ' + util.getErrorString(e));
 			self.done();
 		}
 	},
 
 
-	fetchSongsForArtist: function(songsByArtist) {
-		var songFetcher = new SongFetcher(this.artist);
+	fetchSongsIfValid: function() {
 		var save = _.bind(this.save, this);
 		var self = this;
 
-		if (songsByArtist.length > 0) {
-			console.log(chalk.blue.bold('Songs for ' + this.artist.name + ' are already in the database'));
-			return;
-		}
+		if(!this.artist || (!this.artist.name && !this.artist.echonest_id))
+			throw('No artist name or echonest_id for artist on phase 3');
 
-		console.log('Fetching songs for ' + this.artist.name);
+		return Promise.resolve(this.shouldSaveSongs())
 
-		return Promise.resolve(songFetcher.fetch())
+		.then(function(shouldFetch) {
+			if(!shouldFetch)
+				console.log(chalk.blue.bold(self.getArtistString() + ' has been already fetched.'));
 
-		.then(function(rawSongs) {
-			return save(rawSongs);
-		});
+			else {
+				var songFetcher = new SongFetcher(self.artist);
+				
+				return Promise.resolve(songFetcher.fetch())
+				
+				.then(function(rawSongs) {
+					return save(rawSongs);
+				});
+			}
+		})		
 	},
 
 
@@ -96,17 +99,27 @@ SongWorker.prototype = {
 		})
 
 		.then(function() {
-			logger.info(self.artist.name + '\'s songs have been successfully added to the database.');
+			console.log(chalk.green.bold(self.getArtistString() + '\'s songs have been successfully added to the database.'));
 		})
 
 		.error(function(error) {
-			throw('Error during transaction for songs. ' + error);
+			throw('Error during DB transaction for songs of artist ' + self.getArtistString() + ' ' + error);
 		})
 
 		.catch(function(exception) {
-			throw('Songs failed to save to the database due to ' + exception);
+			throw(self.getArtistString() + ' failed to save to the DB due to ' + exception);
 		});
-	}
+	},
+
+
+	shouldSaveSongs: function() {
+		return true;
+	},
+
+
+	getArtistString: function() {
+		return 'Artist name: ' + (this.artist.name || 'none') + ', mbid: ' +  (this.artist.echonest_id || 'none');
+	}	
 };
 
 module.exports = SongWorker;
