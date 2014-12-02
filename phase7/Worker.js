@@ -6,9 +6,12 @@ var bookshelf = require('../base/bookshelf');
 var util = require('../base/utilities');
 var _ = require('underscore');
 
-// var TagCollection = require('./models/TagCollection');
-// var FanCollection = require('./models/FanCollection');
-// var SimilarCollection = require('./models/SimilarCollection');
+var Artist = require('./models/Artist');
+var ArtistReleaseRelationCollection = require('./models/ArtistReleaseRelationCollection');
+var ArtistWorkRelationCollection = require('./models/ArtistWorkRelationCollection');
+var ReleaseGroupCollection = require('./models/ReleaseGroupCollection');
+var WorkCollection = require('./models/WorkCollection');
+var WorkWorkRelationCollection = require('./models/WorkWorkRelationCollection');
 
 /**
  * Track worker
@@ -53,9 +56,6 @@ ArtistWorker.prototype = {
 
 		if(!this.artist.musicbrainz_id && !this.artist.name)
 			throw('No musicbrainz_id or name for artist on phase 7');
-
-		if(!this.artist.artist_name && !this.artist.musicbrainz_id)
-			throw('No artist name for artist ' + self.getArtistString());
 
 		return Promise.resolve(this.shouldSaveArtist())
 
@@ -131,29 +131,41 @@ ArtistWorker.prototype = {
 	save: function(rawArtist) {
 		var self = this;
 
-		// var tagCollection = new TagCollection().extractFromRawResponse(rawArtist);
-		// var fanCollection = new FanCollection().extractFromRawResponse(rawArtist);
-		// var similarCollection = new SimilarCollection().extractFromRawResponse(rawArtist);
+		var artist = new Artist().extractFromRawResponse(rawArtist);
+		var artistReleaseRelationCollection = new ArtistReleaseRelationCollection().extractFromRawResponse(rawArtist);
+		var artistWorkRelationCollection = new ArtistWorkRelationCollection().extractFromRawResponse(rawArtist);
+		var releaseGroupCollection = new ReleaseGroupCollection().extractFromRawResponse(rawArtist);
+		var workCollection = new WorkCollection().extractFromRawResponse(rawArtist);
+		var workWorkRelationCollection = new WorkWorkRelationCollection().extractFromRawResponse(rawArtist);
 
-		// return bookshelf.transaction(function(t) {
+		return bookshelf.transaction(function(t) {
 	
-		// 	return Promise.resolve(tagCollection.insertAll(null, { transacting: t }))
+			return Promise.resolve(artist.insertAll(null, { transacting: t }))
 
-		// 	.then(function() { 
-		// 		if(!_.isEmpty(fanCollection)) return fanCollection.insertAll(null, { transacting: t });
-		//   })
-			// .then(function() { 
-			// 	if(!_.isEmpty(similarCollection)) return similarCollection.insertAll(null, { transacting: t });
-		 //  })
-		// })
+			.then(function() { 
+				if(!_.isEmpty(artistReleaseRelationCollection)) return artistReleaseRelationCollection.insertAll(null, { transacting: t });
+		  })
+			.then(function() { 
+				if(!_.isEmpty(artistWorkRelationCollection)) return artistWorkRelationCollection.insertAll(null, { transacting: t });
+		  })
+		  .then(function() { 
+				if(!_.isEmpty(releaseGroupCollection)) return releaseGroupCollection.insertAll(null, { transacting: t });
+		  })
+		  .then(function() { 
+				if(!_.isEmpty(workCollection)) return workCollection.insertAll(null, { transacting: t });
+		  })
+		  .then(function() { 
+				if(!_.isEmpty(workWorkRelationCollection)) return workWorkRelationCollection.insertAll(null, { transacting: t });
+		  })
+		})
 
-		// .then(_.bind(function() {
-		// 	console.log(chalk.green.bold('Track ' + self.getArtistString() + ' has been successfully added to the database.'));
-		// }, self))
+		.then(_.bind(function() {
+			console.log(chalk.green.bold('Track ' + self.getArtistString() + ' has been successfully added to the database.'));
+		}, self))
 
-		// .catch(function(err) {
-		// 	throw('Track ' + self.getArtistString() + ' failed to save to the database due to ' + err);
-		// });
+		.catch(function(err) {
+			throw('Track ' + self.getArtistString() + ' failed to save to the database due to ' + err);
+		});
 	},
 
 
@@ -161,14 +173,14 @@ ArtistWorker.prototype = {
 
 		return true;
 		
-		var query = {};
+		// var query = {};
 		
-		query.track_musicbrainz_id = this.artist.musicbrainz_id ? this.artist.musicbrainz_id : null;
-		query.track_name = this.artist.name ? this.artist.name : null;
+		// query.track_musicbrainz_id = this.artist.musicbrainz_id ? this.artist.musicbrainz_id : null;
+		// query.track_name = this.artist.name ? this.artist.name : null;
 
-		return bookshelf.knex.select().from(FanCollection.prototype.model.prototype.tableName)
-		.where(query).limit(1)
-		.then(function(rows) { return _.isEmpty(rows); });
+		// return bookshelf.knex.select().from(FanCollection.prototype.model.prototype.tableName)
+		// .where(query).limit(1)
+		// .then(function(rows) { return _.isEmpty(rows); });
 	},
 
 

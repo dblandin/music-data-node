@@ -10,9 +10,16 @@ var SongTypeCollection = bookshelf.Collection.extend({
 	
 	extractFromRawResponse: function(response) {
 		var self = this;
+
+		if(!_.isArray(response))
+			return;
+
 		_.each(response, function(song) {
 
 			var types = song.song_type;
+			
+			if(!_.isArray(types))
+				return;
 
 			_.each(types, function(type, index) {
 

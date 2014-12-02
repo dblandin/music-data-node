@@ -1,6 +1,7 @@
 var knex = require('knex');
 var bookshelf = require('bookshelf');
 var config = require('../config').database;
+var _ = require('underscore');
 var Promise = require('bluebird');
 
 console.log('initializing bookshelf');
@@ -30,6 +31,20 @@ bookshelfInstance.Collection.prototype.insertAll = function() {
 		return;
 	
 	return bookshelfInstance.knex(this.model.prototype.tableName).insert(this.toJSON());
+};
+
+bookshelfInstance.Collection.prototype.gradualSave = function() {
+	var limit = 30;
+	var subsections = [];
+	var self = this;
+
+	while((subsections.length * limit) < this.length)
+		subsections.push(this.slice((subsections.length * limit), (limit + (subsections.length * limit))));
+	
+	return Promise.map(subsections, function(subsection) {
+		var toSave = _.map(subsection, function(model){ return model.toJSON(); });
+		return bookshelfInstance.knex(self.model.prototype.tableName).insert(toSave);
+	});
 };
 
 module.exports = bookshelfInstance;

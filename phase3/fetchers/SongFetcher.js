@@ -29,10 +29,7 @@ SongFetcher.prototype = _.extend({}, echonestFetcher, {
 		return Promise.resolve(paginateThroughSongs())
 
 		.then(function() {
-			if(self.songs && !_.isEmpty(self.songs))
-				return self.songs;
-			else
-				throw ('No songs were found for artist');
+			return self.songs;
 		});
 	},
 
@@ -54,10 +51,10 @@ SongFetcher.prototype = _.extend({}, echonestFetcher, {
 		var songs = response.songs;
 		
 		if (songs && !_.isEmpty(songs)) {
-			this.songs = _.union(this.songs, songs);
+			this.songs = this.songs.concat(songs);
 			this.page++;
 
-			if (songs.length === this.biteSize)
+			if (songs.length === this.biteSize && this.page < 10)
 				return this.paginateThroughSongs();
 		}
 	},
@@ -77,7 +74,7 @@ SongFetcher.prototype = _.extend({}, echonestFetcher, {
 			api_key: key,
 			format: 'json',
 			artist_id: this.artist.echonest_id, // TODO support when we don't have the id
-			results: this.biteSize,
+			results: this.page === 9 ? this.biteSize - 1 : this.biteSize,
 			start: this.page * this.biteSize,
 			bucket: [
 				'song_currency',

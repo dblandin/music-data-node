@@ -11,12 +11,18 @@ var SongCollection = bookshelf.Collection.extend({
 	
 	extractFromRawResponse: function(response) {
 		var self = this;
+
+		if(!_.isArray(response))
+			return;
+
 		_.each(response, function(song) {
+
 			var track = song.audio_summary;
 			var lyricfindIds = util.getAllForeignIds('lyricfind-US', song.foreign_ids);
 			var whosampledIds = util.getAllForeignIds('whosampled', song.foreign_ids);
 			var songmeaningsIds = util.getAllForeignIds('songmeanings', song.foreign_ids);
 			var spotifyIds = util.getAllForeignIds('spotify', song.foreign_ids);
+			var types = self.getTypesString(song.song_type);
 
 			self.add(new self.model({
 
@@ -64,10 +70,25 @@ var SongCollection = bookshelf.Collection.extend({
 				danceability: 					track ? track.danceability : null,
 				timesignature: 					track ? track.time_signature : null,
 
+				type: 								types,
+
 				date: 								new Date()
 			}));
 		});
 		return this;
+	},
+
+
+	getTypesString: function(typesArray) {
+		var types = '';
+		
+		if(!typesArray || !_.isArray(typesArray))
+			return types;
+
+		for (var i = 0; i < typesArray.length; i++)
+			types += (typesArray[i].name + ',');
+		
+		return types.slice(0, -1);
 	}
 });
 

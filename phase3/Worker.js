@@ -10,8 +10,6 @@ var logger = require('../base/logManager').getLoggerForFile('./phase3/logs/phase
 var SongFetcher = require('./fetchers/SongFetcher');
 var SongModel = require('./models/Song');
 var SongCollection = require('./models/SongCollection');
-var SongTypeCollection = require('./models/SongTypeCollection');
-
 /**
  * Song worker
  */
@@ -84,18 +82,13 @@ SongWorker.prototype = {
 		var self = this;
 		
 		var songs = new SongCollection();
-		var songTypes = new SongTypeCollection();
 
 		songs.extractFromRawResponse(rawSongs);
-		songTypes.extractFromRawResponse(rawSongs);
 		
 		return bookshelf.transaction(function(t) {
 
-			return Promise.resolve(songs.insertAll(null, { transacting: t}))
+			return Promise.resolve(songs.insertAll(null, { transacting: t}));
 
-			.then(function() {
-				return songTypes.insertAll(null, { transacting: t });
-			})
 		})
 
 		.then(function() {

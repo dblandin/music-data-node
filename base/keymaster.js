@@ -5,7 +5,7 @@ var options = {
 	echonest: {
 		keys: ['U50YPIJZE763SM37V', 'DZ4L5L0PETK272RLT'],
 		margin: 20,
-		rateLimit: 120,
+		rateLimit: 100,
 		timeLimit: 60000
 	},
 
