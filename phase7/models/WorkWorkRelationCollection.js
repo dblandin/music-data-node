@@ -25,7 +25,8 @@ var WorkCollection = bookshelf.Collection.extend({
 
 					work: work.id,
 				  related_work: work.relations[i].work.id,
-				  type: work.relations[i].work.type
+				  type: work.relations[i].work.type,
+					timestamp: new Date()
 
 				}));
 			};

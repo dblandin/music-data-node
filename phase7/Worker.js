@@ -28,7 +28,6 @@ ArtistWorker.prototype = {
 		this.done = callback;
 
 		try {
-
 			return Promise.resolve(this.fetchArtistIfValid())
 
 			.error(function(error) {
@@ -69,93 +68,40 @@ ArtistWorker.prototype = {
 				
 				return Promise.resolve(artistFetcher.fetch())
 
-				.then(function(rawArtist) {
-					return self.save(rawArtist);
+				.then(function(rawTrack) {
+					return self.save(rawTrack);
 				});
 			}
 		});
 	},
 
-
-	// fetch: function() {
-	// 	var rawArtist = {};
-	// 	var query = { arid: this.artist.musicbrainz_id };
-
-	// 	return Promise.resolve(nodebrainz.artist(this.artist.musicbrainz_id))
-
-	// 	.then(function(artist) {
-	// 		rawArtist = artist;
-	// 		nodebrainz.search('release-group', {arid: porcupineTreeMbid, type:'album'})
-	// 	})
-
-	// 	.then(function() {
-
-	// 	})
-
-	// 	.then(function() {
-
-	// 	})
-
-	// 	.then(function() {
-
-	// 	});	
-
-	// 	// Artist lookup
-	// 	nodebrainz.artist(porcupineTreeMbid, {}, function(error, artist) {
-	// 		console.log(artist);
-	// 	});
-
-	// 	// release group
-	// 	nodebrainz.search('release-group', {arid: porcupineTreeMbid, type:'album|ep'}, function(error, response) {
-	// 		console.log(response);
-	// 	});
-
-	// 	// release
-	// 	nodebrainz.search('release', {arid: porcupineTreeMbid}, function(error, response) {
-	// 		console.log(response);
-	// 	});
-
-	// 	// recordings
-	// 	nodebrainz.search('recording', {arid: porcupineTreeMbid}, function(error, response) {
-	// 		console.log(response);
-	// 	});
-
-	// 	// works
-	// 	nodebrainz.search('work', {arid: porcupineTreeMbid}, function(error, response) {
-	// 		console.log(response);
-	// 	});
-
-	// },
-
-
-	save: function(rawArtist) {
+	save: function(rawTrack) {
 		var self = this;
 
-		var artist = new Artist().extractFromRawResponse(rawArtist);
-		var artistReleaseRelationCollection = new ArtistReleaseRelationCollection().extractFromRawResponse(rawArtist);
-		var artistWorkRelationCollection = new ArtistWorkRelationCollection().extractFromRawResponse(rawArtist);
-		var releaseGroupCollection = new ReleaseGroupCollection().extractFromRawResponse(rawArtist);
-		var workCollection = new WorkCollection().extractFromRawResponse(rawArtist);
-		var workWorkRelationCollection = new WorkWorkRelationCollection().extractFromRawResponse(rawArtist);
+		var artist = new Artist().extractFromRawResponse(rawTrack);
+		var artistReleaseRelationCollection = new ArtistReleaseRelationCollection().extractFromRawResponse(rawTrack);
+		var artistWorkRelationCollection = new ArtistWorkRelationCollection().extractFromRawResponse(rawTrack);
+		var releaseGroupCollection = new ReleaseGroupCollection().extractFromRawResponse(rawTrack);
+		var workCollection = new WorkCollection().extractFromRawResponse(rawTrack);
+		var workWorkRelationCollection = new WorkWorkRelationCollection().extractFromRawResponse(rawTrack);
 
 		return bookshelf.transaction(function(t) {
 	
-			return Promise.resolve(artist.insertAll(null, { transacting: t }))
-
+			return Promise.resolve(artist.save(null, { method: 'insert', transacting: t }))
+			.then(function() { 
+				if(!_.isEmpty(releaseGroupCollection)) return releaseGroupCollection.insertAll(null, { transacting: t });
+		  })
+			.then(function() { 
+				if(!_.isEmpty(workCollection)) return workCollection.insertAll(null, { transacting: t });
+		  })
+			.then(function() { 
+				if(!_.isEmpty(workWorkRelationCollection)) return workWorkRelationCollection.insertAll(null, { transacting: t });
+		  })
 			.then(function() { 
 				if(!_.isEmpty(artistReleaseRelationCollection)) return artistReleaseRelationCollection.insertAll(null, { transacting: t });
 		  })
 			.then(function() { 
 				if(!_.isEmpty(artistWorkRelationCollection)) return artistWorkRelationCollection.insertAll(null, { transacting: t });
-		  })
-		  .then(function() { 
-				if(!_.isEmpty(releaseGroupCollection)) return releaseGroupCollection.insertAll(null, { transacting: t });
-		  })
-		  .then(function() { 
-				if(!_.isEmpty(workCollection)) return workCollection.insertAll(null, { transacting: t });
-		  })
-		  .then(function() { 
-				if(!_.isEmpty(workWorkRelationCollection)) return workWorkRelationCollection.insertAll(null, { transacting: t });
 		  })
 		})
 
@@ -170,17 +116,7 @@ ArtistWorker.prototype = {
 
 
 	shouldSaveArtist: function() {
-
 		return true;
-		
-		// var query = {};
-		
-		// query.track_musicbrainz_id = this.artist.musicbrainz_id ? this.artist.musicbrainz_id : null;
-		// query.track_name = this.artist.name ? this.artist.name : null;
-
-		// return bookshelf.knex.select().from(FanCollection.prototype.model.prototype.tableName)
-		// .where(query).limit(1)
-		// .then(function(rows) { return _.isEmpty(rows); });
 	},
 
 

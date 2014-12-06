@@ -20,7 +20,8 @@ var WorkCollection = bookshelf.Collection.extend({
 				self.add(new self.model({
 
 					artist: releaseGroup['artist-credit'][i].artist.id,
-				  release_group: releaseGroup.id
+				  release_group: releaseGroup.id,
+					timestamp: new Date()
 
 				}));
 			}

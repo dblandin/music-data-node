@@ -35,12 +35,6 @@ ArtistFetcher.prototype = {
 
 		.then(function() {
 			clean();
-			return musicbrainz.searchAsync('release', self.getSearchArgs())
-			.then(_.bind(self.onReleaseRequestDone, self));
-		})
-
-		.then(function() {
-			clean();
 			return musicbrainz.searchAsync('work', self.getSearchArgs())
 			.then(_.bind(self.onWorkRequestDone, self));
 		})
@@ -65,19 +59,6 @@ ArtistFetcher.prototype = {
 			this.page++;
 			return musicbrainz.searchAsync('release-group', this.getSearchArgs() )
 			.then(_.bind(this.onReleaseGroupRequestDone, this));
-		}
-	},
-
-	onReleaseRequestDone: function(response) {
-		if(!_.isObject(response)) return;
-
-		this.rawArtist.releases = this.rawArtist.releases || [];
-		this.rawArtist.releases = this.rawArtist.releases.concat(response.releases || []);
-
-		if(_.isArray(response.releases) && response.releases.length === this.biteSize) {
-			this.page++;
-			return musicbrainz.searchAsync('release', this.getSearchArgs() )
-			.then(_.bind(this.onReleaseRequestDone, this));
 		}
 	},
 

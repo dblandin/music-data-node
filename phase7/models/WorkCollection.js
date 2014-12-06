@@ -20,7 +20,8 @@ var WorkCollection = bookshelf.Collection.extend({
 
 				mbid: work.id,
 			  title: work.title,
-			  type: work.type
+			  type: work.type,
+				timestamp: new Date()
 
 			}));
 		});

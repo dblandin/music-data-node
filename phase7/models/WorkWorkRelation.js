@@ -3,7 +3,7 @@ var _ = require('underscore');
 
 var WorkWorkRelation = bookshelf.Model.extend({
 
-	tableName: 'phase9.5_musicbrainz_work_work'
+	tableName: 'phase9_5_musicbrainz_work_work'
 
 });
 
