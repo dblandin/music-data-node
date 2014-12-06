@@ -86,7 +86,7 @@ var SongCollection = bookshelf.Collection.extend({
 			return types;
 
 		for (var i = 0; i < typesArray.length; i++)
-			types += (typesArray[i].name + ',');
+			types += (typesArray[i] + ',');
 		
 		return types.slice(0, -1);
 	}
