@@ -78,17 +78,19 @@ TrackWorker.prototype = {
 	save: function(rawTrack) {
 		var self = this;
 
-		var tagCollection = new TagCollection().extractFromRawResponse(rawTrack);
-		var fanCollection = new FanCollection().extractFromRawResponse(rawTrack);
-		// var similarCollection = new SimilarCollection().extractFromRawResponse(rawTrack);
+		// var tagCollection = new TagCollection().extractFromRawResponse(rawTrack);
+		// var fanCollection = new FanCollection().extractFromRawResponse(rawTrack);
+		var similarCollection = new SimilarCollection().extractFromRawResponse(rawTrack);
 
 		return bookshelf.transaction(function(t) {
-	
-			return Promise.resolve(tagCollection.insertAll(null, { transacting: t }))
 
-			.then(function() { 
-				if(!_.isEmpty(fanCollection)) return fanCollection.insertAll(null, { transacting: t });
-		  })
+			return Promise.resolve(similarCollection.insertAll(null, { transacting: t }));
+	
+			// return Promise.resolve(tagCollection.insertAll(null, { transacting: t }))
+
+			// .then(function() { 
+			// 	if(!_.isEmpty(fanCollection)) return fanCollection.insertAll(null, { transacting: t });
+		 //  })
 			// .then(function() { 
 			// 	if(!_.isEmpty(similarCollection)) return similarCollection.insertAll(null, { transacting: t });
 		 //  })

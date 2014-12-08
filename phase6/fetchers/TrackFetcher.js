@@ -26,22 +26,22 @@ TrackFetcher.prototype = _.extend({}, lastFmFetcher, {
 		clean();
 		return Promise.resolve(keymaster.getKey())
 
-		.then(function(key) {
-			return self.makeRequest(self.generateTopTagsRequest(key))
-			.then(_.bind(self.onTopTagsRequestDone, self));
-		})
-
-		.then(keymaster.getKey).then(function(key) {
-			clean();
-			return self.makeRequest(self.generateTopFansRequest(key))
-			.then(_.bind(self.onTopFansRequestDone, self));
-		})
+		// .then(function(key) {
+		// 	return self.makeRequest(self.generateTopTagsRequest(key))
+		// 	.then(_.bind(self.onTopTagsRequestDone, self));
+		// })
 
 		// .then(keymaster.getKey).then(function(key) {
 		// 	clean();
-		// 	return self.makeRequest(self.generateSimilarRequest(key))
-		// 	.then(_.bind(self.onSimilarRequestDone, self));;
+		// 	return self.makeRequest(self.generateTopFansRequest(key))
+		// 	.then(_.bind(self.onTopFansRequestDone, self));
 		// })
+
+		.then(keymaster.getKey).then(function(key) {
+			clean();
+			return self.makeRequest(self.generateSimilarRequest(key))
+			.then(_.bind(self.onSimilarRequestDone, self));;
+		})
 
 		.then(function() {
 			if(self.track.artist_musicbrainz_id && !_.isEmpty(self.track.artist_musicbrainz_id))
