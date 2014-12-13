@@ -12,7 +12,7 @@ var ArtistWorkRelationCollection = require('./models/ArtistWorkRelationCollectio
 var ReleaseGroupCollection = require('./models/ReleaseGroupCollection');
 var WorkCollection = require('./models/WorkCollection');
 var WorkWorkRelationCollection = require('./models/WorkWorkRelationCollection');
-
+var BandMemberRelationCollection = require('./models/BandMemberRelationCollection'); 
 /**
  * Track worker
  */
@@ -28,7 +28,7 @@ ArtistWorker.prototype = {
 		this.done = callback;
 
 		try {
-			return Promise.resolve(this.fetchArtistIfValid())
+			return Promise.resolve(this.fetchArtistIfValid(self.artist))
 
 			.error(function(error) {
 				logger.error(self.getArtistString() + ' - ' + util.getErrorString(error));
@@ -50,13 +50,15 @@ ArtistWorker.prototype = {
 	},
 
 
-	fetchArtistIfValid: function() {
+	fetchArtistIfValid: function(artist) {
 		var self = this;
 
-		if(!this.artist.musicbrainz_id && !this.artist.name)
+		if(!artist.musicbrainz_id && !artist.name)
 			throw('No musicbrainz_id or name for artist on phase 7');
 
 		return Promise.resolve(this.shouldSaveArtist())
+
+		.bind({ artist: artist })
 
 		.then(function(shouldFetch) {
 		
@@ -64,53 +66,100 @@ ArtistWorker.prototype = {
 				console.log(chalk.blue.bold('Artist ' + self.getArtistString() + ' has been already fetched.'));
 
 			else {
-				var artistFetcher = new ArtistFetcher(self.artist);
+				var artistFetcher = new ArtistFetcher(this.artist);
 				
-				return Promise.resolve(artistFetcher.fetch())
+				return Promise.resolve(artistFetcher.fetch()).bind(this)
 
-				.then(function(rawTrack) {
-					return self.save(rawTrack);
+				.then(function(rawArtist) {
+					return self.save(rawArtist)
+
+					.then(function() {
+						var groupMembers = self.extractGroupMembers(rawArtist);
+						
+						if(groupMembers && !_.isEmpty(groupMembers)) {
+							return Promise.map(groupMembers, function(item, index, arrayLength) {
+								
+								return self.fetchArtistIfValid(item)
+
+								.catch(function(exception) {
+									logger.error(self.getArtistString(item) + ' (group member) - ' + util.getErrorString(exception));
+								});
+
+							}, { concurrency: 1 });
+						}
+					});
 				});
 			}
 		});
 	},
 
-	save: function(rawTrack) {
+
+	extractGroupMembers: function(artist) {
+		if(!artist 
+			|| !_.isString(artist.type) 
+			|| artist.type.toLowerCase() !== 'group' 
+			|| !artist.relations 
+			|| _.isEmpty(artist.relations)) return null;
+
+		var groupMembers = _.pluck(_.where(artist.relations, { type: 'member of band' }), 'artist');
+		var normalizedGroupMembers = [];
+
+		for(var i = 0; i < groupMembers.length; i++) {
+			if(!_.findWhere(normalizedGroupMembers, { musicbrainz_id: groupMembers[i].id }))
+				normalizedGroupMembers.push({ musicbrainz_id: groupMembers[i].id, name: groupMembers[i].name });
+		}
+		
+		return normalizedGroupMembers;
+	},
+
+
+	save: function(rawArtist) {
 		var self = this;
 
-		var artist = new Artist().extractFromRawResponse(rawTrack);
-		var artistReleaseRelationCollection = new ArtistReleaseRelationCollection().extractFromRawResponse(rawTrack);
-		var artistWorkRelationCollection = new ArtistWorkRelationCollection().extractFromRawResponse(rawTrack);
-		var releaseGroupCollection = new ReleaseGroupCollection().extractFromRawResponse(rawTrack);
-		var workCollection = new WorkCollection().extractFromRawResponse(rawTrack);
-		var workWorkRelationCollection = new WorkWorkRelationCollection().extractFromRawResponse(rawTrack);
+		var artist = new Artist().extractFromRawResponse(rawArtist);
+		var artistReleaseRelationCollection = new ArtistReleaseRelationCollection().extractFromRawResponse(rawArtist);
+		var artistWorkRelationCollection = new ArtistWorkRelationCollection().extractFromRawResponse(rawArtist);
+		var releaseGroupCollection = new ReleaseGroupCollection().extractFromRawResponse(rawArtist);
+		var workCollection = new WorkCollection().extractFromRawResponse(rawArtist);
+		var workWorkRelationCollection = new WorkWorkRelationCollection().extractFromRawResponse(rawArtist);
+		var bandMemberRelationCollection = new BandMemberRelationCollection().extractFromRawResponse(rawArtist);
 
+		// Artists duplicates will break. Other duplicates will remain.
 		return bookshelf.transaction(function(t) {
-	
 			return Promise.resolve(artist.save(null, { method: 'insert', transacting: t }))
+			
 			.then(function() { 
-				if(!_.isEmpty(releaseGroupCollection)) return releaseGroupCollection.insertAll(null, { transacting: t });
+				if(!_.isEmpty(releaseGroupCollection)) 
+					return Promise.resolve(releaseGroupCollection.insertAll(null, { transacting: t }));
 		  })
 			.then(function() { 
-				if(!_.isEmpty(workCollection)) return workCollection.insertAll(null, { transacting: t });
+				if(!_.isEmpty(workCollection)) 
+					return Promise.resolve(workCollection.insertAll(null, { transacting: t }));
 		  })
 			.then(function() { 
-				if(!_.isEmpty(workWorkRelationCollection)) return workWorkRelationCollection.insertAll(null, { transacting: t });
+				if(!_.isEmpty(workWorkRelationCollection)) 
+					return Promise.resolve(workWorkRelationCollection.insertAll(null, { transacting: t }));
 		  })
 			.then(function() { 
-				if(!_.isEmpty(artistReleaseRelationCollection)) return artistReleaseRelationCollection.insertAll(null, { transacting: t });
+				if(!_.isEmpty(artistReleaseRelationCollection)) 
+					return Promise.resolve(artistReleaseRelationCollection.insertAll(null, { transacting: t }));
 		  })
 			.then(function() { 
-				if(!_.isEmpty(artistWorkRelationCollection)) return artistWorkRelationCollection.insertAll(null, { transacting: t });
+				if(!_.isEmpty(artistWorkRelationCollection)) 
+					return Promise.resolve(artistWorkRelationCollection.insertAll(null, { transacting: t }));
+		  })
+		  .then(function() { 
+				if(!_.isEmpty(bandMemberRelationCollection)) 
+					return Promise.resolve(bandMemberRelationCollection.insertAll(null, { transacting: t }));
 		  })
 		})
 
 		.then(_.bind(function() {
-			console.log(chalk.green.bold('Track ' + self.getArtistString() + ' has been successfully added to the database.'));
+			console.log(chalk.green.bold('Artist ' + self.getArtistString(rawArtist) + ' has been successfully added to the database.'));
 		}, self))
 
 		.catch(function(err) {
-			throw('Track ' + self.getArtistString() + ' failed to save to the database due to ' + err);
+			throw('Artist ' + self.getArtistString(rawArtist) + ' failed to save to the database due to ' + err);
 		});
 	},
 
@@ -120,8 +169,9 @@ ArtistWorker.prototype = {
 	},
 
 
-	getArtistString: function() {
-		return 'name: ' + (this.artist.name || 'none') + ', id: ' +  (this.artist.musicbrainz_id || 'none');
+	getArtistString: function(artist) {
+		artist = artist || this.artist;
+		return 'name: ' + (artist.name || 'none') + ', id: ' +  (artist.musicbrainz_id || artist.id || 'none');
 	}
 
 };

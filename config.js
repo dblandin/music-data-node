@@ -27,6 +27,7 @@ var development = {
 		},
 
 		queueName: 'music-queue', // Queue name
+		// queueName: 'music-queue-patch', // Queue name
 
 		queueOptions: {
 			passive: false,
@@ -83,6 +84,7 @@ var production = {
 		},
 
 		queueName: 'music-queue',
+		// queueName: 'music-queue-patch',
 
 		queueOptions: {
 			passive: false,

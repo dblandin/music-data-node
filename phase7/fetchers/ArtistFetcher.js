@@ -7,6 +7,7 @@ var musicbrainz = require('../../base/musicbrainzUtil');
  */
 var ArtistFetcher = function(artist) {
 	this.artist = artist;
+	this.limitIP = 1050;
 };
 
 
@@ -23,15 +24,22 @@ ArtistFetcher.prototype = {
 		this.rawArtist = {};
 		clean();
 
-		return Promise.resolve(musicbrainz.artistAsync(this.artist.musicbrainz_id, {}))
+		return Promise.delay(self.limitIP)
 
-		.then(_.bind(self.onArtistRequestDone, self))
+		.then(function() {
+			return musicbrainz.artistAsync(self.artist.musicbrainz_id, { inc: 'aliases+artist-rels' })
+			.then(_.bind(self.onArtistRequestDone, self));
+		})
+
+		.delay(self.limitIP)
 
 		.then(function() {
 			clean();
 			return musicbrainz.searchAsync('release-group', self.getSearchArgs())
 			.then(_.bind(self.onReleaseGroupRequestDone, self));
 		})
+
+		.delay(self.limitIP)
 
 		.then(function() {
 			clean();

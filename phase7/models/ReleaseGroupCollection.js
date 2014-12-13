@@ -21,7 +21,7 @@ var ReleaseGroupCollection = bookshelf.Collection.extend({
 				mbid: releaseGroup.id,
 			  title: releaseGroup.title,
 			  primary_type: releaseGroup['primary-type'],
-			  secondary_type: releaseGroup['secondary-type'],
+			  secondary_type: _.isArray(releaseGroup['secondary-type']) ? releaseGroup['secondary-type'][0] : null,
 			  release_count: releaseGroup.releases ? releaseGroup.releases.length : 0,
 				timestamp: new Date()
 

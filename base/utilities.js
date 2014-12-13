@@ -23,6 +23,6 @@ module.exports = {
 		if(!error)
 			return 'Unknown error (null error object)';
 		else
-			return _.isString(error) ? error : (error.message || 'Unknown error');
+			return _.isString(error) ? error : (error.message || error.error || 'Unknown error');
 	}
 }
